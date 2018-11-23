@@ -1,0 +1,10 @@
+{
+	"name": "ru.scround.mframework",
+	"displayName":  "mFramework",
+	"version": "1.0.1",
+	"unity": "2018.2",
+	"description": "TODO",
+	"keywords": [ "Scround", "mFramework", "UI", "Saves" ],
+	"category": "Unity",
+	"dependencies": {}
+}
