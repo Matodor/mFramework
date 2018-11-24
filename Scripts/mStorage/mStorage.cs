@@ -1,7 +1,7 @@
 ﻿namespace mFramework.Storage
 {
-    public static class mStorage
+    public class mStorage : IKeyValueStorage
     {
-
+        public static IKeyValueStorage Instance { get; } = new mStorage();
     }
 }

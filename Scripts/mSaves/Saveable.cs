@@ -4,24 +4,24 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using mFramework.Core;
-using UnityEngine;
+using mFramework.Storage;
 
 namespace mFramework.Saves
 {
     public abstract class Saveable
     {
         public readonly string Key;
+        public IKeyValueStorage Storage { get; set; } = mStorage.Instance;
 
-        private static readonly Dictionary<Type, Func<object>> _saveableTypes;
+        private static readonly Dictionary<Type, Func<object>> _saveableValueTypes;
 
         static Saveable()
         {
-            _saveableTypes = new Dictionary<Type, Func<object>>();
+            _saveableValueTypes = new Dictionary<Type, Func<object>>();
         }
 
         protected Saveable(string key)
         {
-            // TODO backing fields from properties
             Key = key;
 
             var cachedType = mCore.GetCachedType(GetType());
@@ -36,7 +36,7 @@ namespace mFramework.Saves
                 if (!cachedField.FieldInfo.FieldType.BaseType.IsGenericType)
                     return;
 
-                if (!_saveableTypes.ContainsKey(cachedField.FieldInfo.FieldType))
+                if (!_saveableValueTypes.ContainsKey(cachedField.FieldInfo.FieldType))
                 {
                     var genericDefenition = cachedField.FieldInfo.FieldType.BaseType.GetGenericTypeDefinition();
                     if (genericDefenition == typeof(SaveableValue<>))
@@ -49,7 +49,7 @@ namespace mFramework.Saves
                         {
                             var e = Expression.New(constructor);
                             var func = (Func<object>) Expression.Lambda(e).Compile();
-                            _saveableTypes.Add(cachedField.FieldInfo.FieldType, func);
+                            _saveableValueTypes.Add(cachedField.FieldInfo.FieldType, func);
                         }
                         else 
                             throw new Exception("SaveableValue must have public constructor without parameters");
@@ -59,7 +59,7 @@ namespace mFramework.Saves
                 }
 
                 if (cachedField.GetValue(this) == null)
-                    cachedField.SetValue(this, _saveableTypes[cachedField.FieldInfo.FieldType]());
+                    cachedField.SetValue(this, _saveableValueTypes[cachedField.FieldInfo.FieldType]());
 
                 //Debug.Log(string.Join("\n", new string[]
                 //{
@@ -69,6 +69,53 @@ namespace mFramework.Saves
                 //    $"BaseType ={cachedField.FieldInfo.FieldType.BaseType}",
                 //}));
             }
+        }
+
+        public virtual string FieldKey(string fieldName)
+        {
+            return fieldName;
+        }
+
+        public void Save()
+        {
+            BeforeSave();
+
+            var cachedType = mCore.GetCachedType(GetType());
+            foreach (var cachedField in cachedType.CachedFields)
+            {
+                if (!IsSaveableField(cachedField.FieldInfo))
+                    continue;
+
+                var key = FieldKey(cachedField.FieldInfo.Name);
+                var saveableValue = (SaveableValue) cachedField.GetValue(this);
+                saveableValue.Save(Storage, key);
+            }
+
+            AfterSave();
+        }
+
+        public void Load()
+        {
+            BeforeLoad();
+
+            var cachedType = mCore.GetCachedType(GetType());
+            foreach (var cachedField in cachedType.CachedFields)
+            {
+                if (!IsSaveableField(cachedField.FieldInfo))
+                    continue;
+
+                var key = FieldKey(cachedField.FieldInfo.Name);
+                var saveableValue = (SaveableValue) cachedField.GetValue(this);
+                saveableValue.Load(Storage, key);
+            }
+
+            AfterLoad();
+        }
+
+        public static bool IsSaveableField(FieldInfo fieldInfo)
+        {
+            return _saveableValueTypes.ContainsKey(fieldInfo.FieldType) && 
+                   fieldInfo.CustomAttributes.FirstOrDefault(a => a.AttributeType == typeof(IgnoreAttribute)) == null;
         }
 
         public virtual void BeforeSave() { }

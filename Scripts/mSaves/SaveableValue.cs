@@ -1,11 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using mFramework.Storage;
 
 namespace mFramework.Saves
 {
     public delegate void SaveableValueChanged<in T>(T saveableValue);
 
-    public abstract class SaveableValue<T>
+    public abstract class SaveableValue
+    {
+        public abstract bool Save(IKeyValueStorage storage, string key);
+        public abstract bool Load(IKeyValueStorage storage, string key);
+    }
+
+    public abstract class SaveableValue<T> : SaveableValue
     {
         public event SaveableValueChanged<T> ValueChanged;
 
@@ -21,13 +28,10 @@ namespace mFramework.Saves
         }
 
         protected T ProtectedValue;
-
+                
         public static implicit operator T(SaveableValue<T> saveable)
         {
             return saveable.ProtectedValue;
         }
-
-        public abstract bool Save();
-        public abstract void Load();
     }
 }

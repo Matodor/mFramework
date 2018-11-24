@@ -1,19 +1,23 @@
 ﻿using System;
+using mFramework.Storage;
+using UnityEngine;
 
 namespace mFramework.Saves
 {
     public sealed class SaveableBoolean : SaveableValue<bool>
     {
-        public override bool Save()
+        public override bool Save(IKeyValueStorage storage, string key)
         {
-            throw new NotImplementedException();
+            Debug.Log($"Save {key}");
+            return true;
         }
 
-        public override void Load()
+        public override bool Load(IKeyValueStorage storage, string key)
         {
-            throw new NotImplementedException();
+            Debug.Log($"Load {key}");
+            return true;
         }
-        
+
         public override string ToString()
         {
             return ProtectedValue ? "true" : "false";

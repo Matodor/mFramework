@@ -1,7 +1,7 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
-namespace mFramework.UI.Editor
+namespace mFramework.Editor.UI
 {
     public class TestWindow : EditorWindow
     {
