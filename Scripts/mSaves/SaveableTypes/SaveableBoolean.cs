@@ -1,20 +1,19 @@
-﻿using System;
-using mFramework.Storage;
+﻿using mFramework.Storage;
 using UnityEngine;
 
 namespace mFramework.Saves
 {
     public sealed class SaveableBoolean : SaveableValue<bool>
     {
-        public override bool Save(IKeyValueStorage storage, string key)
+        public override bool Save(IKeyValueStorage storage)
         {
-            Debug.Log($"Save {key}");
+            Debug.Log($"Save {SaveKey}");
             return true;
         }
 
-        public override bool Load(IKeyValueStorage storage, string key)
+        public override bool Load(IKeyValueStorage storage)
         {
-            Debug.Log($"Load {key}");
+            Debug.Log($"Load {SaveKey}");
             return true;
         }
 

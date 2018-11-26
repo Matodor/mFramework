@@ -2,7 +2,7 @@
 
 namespace mFramework.Saves
 {
-    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Property)]
     public class IgnoreAttribute : Attribute
     {
         

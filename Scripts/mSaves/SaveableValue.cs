@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using mFramework.Storage;
 
 namespace mFramework.Saves
@@ -8,8 +7,10 @@ namespace mFramework.Saves
 
     public abstract class SaveableValue
     {
-        public abstract bool Save(IKeyValueStorage storage, string key);
-        public abstract bool Load(IKeyValueStorage storage, string key);
+        public string SaveKey { get; set; }
+
+        public abstract bool Save(IKeyValueStorage storage);
+        public abstract bool Load(IKeyValueStorage storage);
     }
 
     public abstract class SaveableValue<T> : SaveableValue

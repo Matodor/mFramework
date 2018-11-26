@@ -1,10 +1,10 @@
-﻿using System.Linq;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Reflection.Emit;
 
 namespace mFramework.Core
 {
     public delegate object CachedFieldGetter(object target);
+
     public delegate void CachedFieldSetter(object target, object value);
 
     public class CachedField
@@ -16,8 +16,8 @@ namespace mFramework.Core
         public CachedField(FieldInfo info)
         {
             FieldInfo = info;
-            _getter = Getter(FieldInfo);
-            _setter = Setter(FieldInfo);
+            _getter = Getter(info);
+            _setter = Setter(info);
         }
 
         public void SetValue(object target, object value)
@@ -30,19 +30,19 @@ namespace mFramework.Core
             return _getter(target);
         }
 
-        public static CachedFieldGetter Getter(FieldInfo field)
+        public static CachedFieldGetter Getter(FieldInfo info)
         {
             // ReSharper disable once AssignNullToNotNullAttribute
-            var method = new DynamicMethod("Get" + field.Name, typeof(object), new[] {typeof(object)},
-                field.DeclaringType, true);
+            var method = new DynamicMethod("Get" + info.Name, typeof(object),
+                new[] {typeof(object)}, info.DeclaringType, true);
             var gen = method.GetILGenerator();
 
             gen.Emit(OpCodes.Ldarg_0);
-            gen.Emit(OpCodes.Castclass, field.DeclaringType); // Cast to source type
-            gen.Emit(OpCodes.Ldfld, field);
+            gen.Emit(OpCodes.Castclass, info.DeclaringType); // Cast to source type
+            gen.Emit(OpCodes.Ldfld, info);
 
-            if (field.FieldType.IsValueType)
-                gen.Emit(OpCodes.Box, field.FieldType);
+            if (info.FieldType.IsValueType)
+                gen.Emit(OpCodes.Box, info.FieldType);
 
             gen.Emit(OpCodes.Ret);
 
@@ -52,8 +52,8 @@ namespace mFramework.Core
         public static CachedFieldSetter Setter(FieldInfo field)
         {
             // ReSharper disable once AssignNullToNotNullAttribute
-            var method = new DynamicMethod("Set" + field.Name, null, new[] {typeof(object), typeof(object)},
-                field.DeclaringType, true);
+            var method = new DynamicMethod("Set" + field.Name, null,
+                new[] {typeof(object), typeof(object)}, field.DeclaringType, true);
             var gen = method.GetILGenerator();
 
             gen.Emit(OpCodes.Ldarg_0); // Load target to stack

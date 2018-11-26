@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace mFramework.Core.Security
+﻿namespace mFramework.Core.Security
 {
     public class KnuthHash
     {
