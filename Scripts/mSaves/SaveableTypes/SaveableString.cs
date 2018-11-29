@@ -1,18 +1,17 @@
-﻿namespace mFramework.Saves
-{
-    public sealed class SaveableBoolean : SaveableValue<bool>
-    {
-        private const byte ByteFalse = 0;
-        private const byte ByteTrue = 1;
+﻿using System.Text;
 
+namespace mFramework.Saves
+{
+    public class SaveableString : SaveableValue<string>
+    {
         public override string ToString()
         {
-            return Value ? "true" : "false";
+            return Value;
         }
 
         public override byte[] Serialize()
         {
-            return new [] { Value ? ByteTrue : ByteFalse};
+            return Encoding.UTF8.GetBytes(Value);
         }
 
         public override bool Deserialize(byte[] array, int startIndex)
@@ -20,7 +19,7 @@
             if (array == null || array.Length == 0 || startIndex >= array.Length)
                 return false;
 
-            Value = array[startIndex] == ByteTrue;
+            Value = Encoding.UTF8.GetString(array, startIndex, array.Length - startIndex);
             return true;
         }
     }

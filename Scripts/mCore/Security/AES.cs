@@ -16,8 +16,8 @@ namespace mFramework.Core.Security
         /// </summary>
         /// 
         public static int KeyLength = 128;
-        public static string SaltKey = "x/V2ekO}r:?sG(qs";
-        public static string VIKey = "FhCPh4~}2Ws5/7~T";
+        public static string SaltKey = "@F#d-z=3K#RBsdvS";
+        public static string VIKey = "9xWdSS$j3zC@&x3D";
 
         public static string Encrypt(byte[] value, string password)
         {

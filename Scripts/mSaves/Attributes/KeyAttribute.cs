@@ -5,7 +5,7 @@ namespace mFramework.Saves
     [AttributeUsage(AttributeTargets.Property)]
     public class KeyAttribute : Attribute
     {
-        public const int MaxKeyLength = 10;
+        public const int MaxKeyLength = 16;
         public readonly string Key;
 
         public KeyAttribute(string key)

@@ -1,10 +1,15 @@
-﻿using System;
+﻿// ReSharper disable InlineOutVariableDeclaration
+using System;
 using System.Collections.Generic;
+using System.IO.Pipes;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text;
 using mFramework.Core;
+using mFramework.Core.Security;
 using mFramework.Storage;
+using Microsoft.Win32.SafeHandles;
 using UnityEngine;
 
 namespace mFramework.Saves
@@ -12,7 +17,8 @@ namespace mFramework.Saves
     public abstract class Saveable
     {
         public readonly string SaveKey;
-        public IKeyValueStorage Storage { get; set; } = mStorage.Instance;
+
+        protected readonly Dictionary<string, CachedProperty> SaveableProperties;
 
         private static readonly Dictionary<Type, Func<SaveableValue>> _saveableValueTypes;
 
@@ -24,11 +30,11 @@ namespace mFramework.Saves
         protected Saveable(string saveKey)
         {
             if (saveKey.Length > KeyAttribute.MaxKeyLength)
-                throw new Exception($"Max key length is {KeyAttribute.MaxKeyLength} ({saveKey})");
+                throw new Exception($"Saveable key max length={KeyAttribute.MaxKeyLength} ({saveKey})");
 
+            SaveableProperties = new Dictionary<string, CachedProperty>();
             SaveKey = saveKey;
             var cachedType = mCore.GetCachedType(GetType());
-            var keys = new List<string>();
 
             foreach (var cachedProperty in cachedType.CachedProperties)
             {
@@ -50,7 +56,7 @@ namespace mFramework.Saves
                 var enumerable = cachedProperty.PropertyInfo.GetCustomAttributes();
                 var attributes = enumerable as Attribute[] ?? enumerable.ToArray();
 
-                if (!_saveableValueTypes.ContainsKey(cachedProperty.PropertyInfo.PropertyType))
+                if (!IsSaveableValue(cachedProperty.PropertyInfo))
                 {
                     // ReSharper disable once PossibleNullReferenceException
                     var genericDefenition = cachedProperty.PropertyInfo.PropertyType.BaseType
@@ -69,7 +75,7 @@ namespace mFramework.Saves
                                 .Lambda(expression)
                                 .Compile();
                             _saveableValueTypes.Add(cachedProperty.PropertyInfo.PropertyType, func);
-                        }
+                        } 
                         else
                             throw new Exception("SaveableValue must have public constructor without parameters");
                     }
@@ -87,58 +93,65 @@ namespace mFramework.Saves
                 if (keyAttribute == null)
                     throw new Exception($"[mSaves] Property '{cachedProperty.PropertyInfo.Name}' in '{cachedType.Type.Name}' not have a Key attribute");
 
-                var saveableValue = cachedProperty.GetValue(this) as SaveableValue ??
-                    _saveableValueTypes[cachedProperty.PropertyInfo.PropertyType]();
-
-                saveableValue.SaveKey = keyAttribute.Key;
+                if (SaveableProperties.ContainsKey(keyAttribute.Key)) 
+                    throw new Exception($"[mSaves] Key {keyAttribute.Key} already exist");
 
                 if (cachedProperty.PropertyInfo.CanWrite)
-                    cachedProperty.SetValue(this, saveableValue);
-
-                Debug.Log(string.Join("\n", new[]
                 {
-                    $"cachedProperty Name={cachedProperty.PropertyInfo.Name}",
-                    $"Value={cachedProperty.GetValue(this)} ({cachedProperty.GetValue(this)?.GetType().Name ?? "null"})",
-                    $"Type={cachedProperty.PropertyInfo.PropertyType.Name}",
-                    $"BaseType ={cachedProperty.PropertyInfo.PropertyType.BaseType}",
-                    $"HasElementType ={cachedProperty.PropertyInfo.PropertyType.HasElementType}",
-                    $"attributes = {attributes.Select(a => a.GetType().Name).Aggregate((a, b) => a + "," + b)}",
-                }));
+                    cachedProperty.SetValue(this,
+                        cachedProperty.GetValue(this) as SaveableValue ??
+                        _saveableValueTypes[cachedProperty.PropertyInfo.PropertyType]()
+                    );
+                }
+
+                SaveableProperties.Add(keyAttribute.Key, cachedProperty);
+
+//              Debug.Log(string.Join("\n", new[]
+//              {
+//                  $"cachedProperty Name={cachedProperty.PropertyInfo.Name}",
+//                  $"Value={cachedProperty.GetValue(this)} ({cachedProperty.GetValue(this)?.GetType().Name ?? "null"})",
+//                  $"Type={cachedProperty.PropertyInfo.PropertyType.Name}",
+//                  $"BaseType ={cachedProperty.PropertyInfo.PropertyType.BaseType}",
+//                  $"HasElementType ={cachedProperty.PropertyInfo.PropertyType.HasElementType}",
+//                  $"attributes = {attributes.Select(a => a.GetType().Name).Aggregate((a, b) => a + "," + b)}",
+//              }));
             }
         }
 
-        public void Save()
+        public virtual void Save()
         {
             BeforeSave();
 
-            var cachedType = mCore.GetCachedType(GetType());
-            foreach (var cachedProperty in cachedType.CachedProperties)
+            foreach (var pair in SaveableProperties)
             {
-                if (!IsSaveableValue(cachedProperty.PropertyInfo))
-                    continue;
-
-                var saveableValue = (SaveableValue) cachedProperty.GetValue(this);
-                saveableValue.Save(Storage);
+                var saveableValue = (SaveableValue)pair.Value.GetValue(this);
+                var key = KeyHash(SaveKey, pair.Key);
+                mStorage.AddData(key, saveableValue.Serialize());
             }
 
             AfterSave();
         }
 
-        public void Load()
+        public virtual void Load()
         {
             BeforeLoad();
 
-            var cachedType = mCore.GetCachedType(GetType());
-            foreach (var cachedProperty in cachedType.CachedProperties)
+            foreach (var pair in SaveableProperties)
             {
-                if (!IsSaveableValue(cachedProperty.PropertyInfo))
-                    continue;
+                var saveableValue = (SaveableValue) pair.Value.GetValue(this);
+                var key = KeyHash(SaveKey, pair.Key);
 
-                var saveableValue = (SaveableValue) cachedProperty.GetValue(this);
-                saveableValue.Load(Storage);
+                byte[] data;
+                if (mStorage.GetData(key, out data))
+                    saveableValue.Deserialize(data, 0);
             }
 
             AfterLoad();
+        }
+
+        public static ulong KeyHash(string saveableKey, string saveableValueKey)
+        {
+            return KnuthHash.GetHash(saveableKey + saveableValueKey);
         }
 
         public static bool IsSaveableValue(PropertyInfo info)
@@ -162,7 +175,14 @@ namespace mFramework.Saves
         {
         }
 
-        //public virtual void OnReset() { }
-        //public virtual void OnReload() { }
+        public virtual void OnReset()
+        {
+
+        }
+
+        public virtual void OnReload()
+        {
+
+        }
     }
 }

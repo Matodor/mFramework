@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+﻿// ReSharper disable InlineOutVariableDeclaration
+using System.Collections.Generic;
 using mFramework.Storage;
 using UnityEngine;
-// ReSharper disable InlineOutVariableDeclaration
 
 namespace mFramework.Saves
 {
@@ -20,7 +20,7 @@ namespace mFramework.Saves
 
         public static void Save()
         {
-            mStorage.Instance.SetValue(SavesVersionKey, SavesVersion);
+            //mStorage.KeyValueStorage.SetValue(SavesVersionKey, SavesVersion);
 
             foreach (var pair in _saveables)
             {
@@ -30,11 +30,11 @@ namespace mFramework.Saves
 
         public static void Load()
         {
-            int savesVersion;
-            if (mStorage.Instance.GetValue(SavesVersionKey, out savesVersion))
-            {
-                Debug.Log($"[mSaves] SavesVersion={savesVersion}");
-            }
+            //int savesVersion;
+            //if (mStorage.KeyValueStorage.GetValue(SavesVersionKey, out savesVersion))
+            //{
+            //    Debug.Log($"[mSaves] SavesVersion={savesVersion}");
+            //}
 
             foreach (var pair in _saveables)
             {

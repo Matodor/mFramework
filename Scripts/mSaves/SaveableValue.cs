@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using mFramework.Storage;
 
 namespace mFramework.Saves
 {
@@ -7,10 +6,8 @@ namespace mFramework.Saves
 
     public abstract class SaveableValue
     {
-        public string SaveKey { get; set; }
-
-        public abstract bool Save(IKeyValueStorage storage);
-        public abstract bool Load(IKeyValueStorage storage);
+        public abstract byte[] Serialize();
+        public abstract bool Deserialize(byte[] array, int startIndex);
     }
 
     public abstract class SaveableValue<T> : SaveableValue
@@ -19,20 +16,20 @@ namespace mFramework.Saves
 
         public T Value
         {
-            get { return ProtectedValue; }
+            get { return _value; }
             set
             {
-                if (Comparer<T>.Default.Compare(value, ProtectedValue) != 0)
+                if (Comparer<T>.Default.Compare(value, _value) != 0)
                     ValueChanged?.Invoke(value);
-                ProtectedValue = value;
+                _value = value;
             }
         }
 
-        protected T ProtectedValue;
+        private T _value;
                 
         public static implicit operator T(SaveableValue<T> saveable)
         {
-            return saveable.ProtectedValue;
+            return saveable._value;
         }
     }
 }
