@@ -4,6 +4,11 @@ namespace mFramework.Saves
 {
     public class SaveableFloat : SaveableValue<float>
     {
+        public override string ToString()
+        {
+            return Value.ToString("R");
+        }
+
         public static byte[] Serialize(float value)
         {
             return BitConverter.GetBytes(value);

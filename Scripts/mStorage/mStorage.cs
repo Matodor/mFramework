@@ -15,7 +15,6 @@ namespace mFramework.Storage
         public static int KeyLength = 128;
         public static string SaltKey = "Daxuzx$q7D_3#67s";
         public static string VIKey = "LpD2BMF2Y$r33e_b";
-        public static string StoragePassword = "CHANGE_PASSWORD";
 
         public static bool Loaded { get; private set; }
         public static DataFileVersionHeader? VersionHeader { get; private set; }
@@ -31,14 +30,6 @@ namespace mFramework.Storage
         static mStorage()
         {
             _data = new Dictionary<string, byte[]>();
-
-            Load(StoragePassword);
-            Application.quitting += ApplicationOnQuitting;
-        }
-
-        private static void ApplicationOnQuitting()
-        {
-            Save(StoragePassword);
         }
 
         public static void Clear()
@@ -163,7 +154,9 @@ namespace mFramework.Storage
 
         public static void Load(string storagePassword)
         {
+            Loaded = false;
             Stream stream;
+
             if (File.Exists(DbPath))
             {
                 Debug.Log($"[mStorage] Load storage, path={DbPath}");

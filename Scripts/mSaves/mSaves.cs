@@ -1,13 +1,12 @@
 ﻿// ReSharper disable InlineOutVariableDeclaration
-using System.Collections.Generic;
 using mFramework.Storage;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace mFramework.Saves
 {
     public static class mSaves
     {
-        public static string EncryptPassword { get; set; } = "qQCP#4~[2ss_/7~T";
         public const int SavesVersion = 1;
         public const string SavesVersionKey = "mSaves_version";
 
@@ -20,7 +19,7 @@ namespace mFramework.Saves
 
         public static void Save()
         {
-            //mStorage.KeyValueStorage.SetValue(SavesVersionKey, SavesVersion);
+            KeyValueStorage.Instance.SetValue(SavesVersionKey, SavesVersion);
 
             foreach (var pair in _saveables)
             {
@@ -30,11 +29,15 @@ namespace mFramework.Saves
 
         public static void Load()
         {
-            //int savesVersion;
-            //if (mStorage.KeyValueStorage.GetValue(SavesVersionKey, out savesVersion))
-            //{
-            //    Debug.Log($"[mSaves] SavesVersion={savesVersion}");
-            //}
+            if (!mStorage.Loaded)
+            {
+                Debug.LogWarning("[mSaves] mStorage not loaded, use method mStorage.Load first");
+                return;
+            }
+
+            int savesVersion;
+            if (KeyValueStorage.Instance.GetValue(SavesVersionKey, out savesVersion))
+                Debug.Log($"[mSaves] SavesVersion={savesVersion}");
 
             foreach (var pair in _saveables)
             {
@@ -53,6 +56,11 @@ namespace mFramework.Saves
         public static void Add(Saveable saveable)
         {
             _saveables.Add(saveable.SaveKey, saveable);
+        }
+
+        public static void Clear()
+        {
+            _saveables.Clear();
         }
 
         public static void Remove(Saveable saveable)

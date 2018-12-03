@@ -6,7 +6,7 @@ namespace mFramework.Saves
     {
         public override string ToString()
         {
-            return Value.ToString();
+            return Value.ToString("N");
         }
 
         public static byte[] Serialize(int value)

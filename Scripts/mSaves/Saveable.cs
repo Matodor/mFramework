@@ -1,15 +1,11 @@
 ﻿// ReSharper disable InlineOutVariableDeclaration
 using System;
 using System.Collections.Generic;
-using System.IO.Pipes;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
 using mFramework.Core;
-using mFramework.Core.Security;
 using mFramework.Storage;
-using Microsoft.Win32.SafeHandles;
 using UnityEngine;
 
 namespace mFramework.Saves
@@ -106,15 +102,15 @@ namespace mFramework.Saves
 
                 SaveableProperties.Add(keyAttribute.Key, cachedProperty);
 
-//              Debug.Log(string.Join("\n", new[]
-//              {
-//                  $"cachedProperty Name={cachedProperty.PropertyInfo.Name}",
-//                  $"Value={cachedProperty.GetValue(this)} ({cachedProperty.GetValue(this)?.GetType().Name ?? "null"})",
-//                  $"Type={cachedProperty.PropertyInfo.PropertyType.Name}",
-//                  $"BaseType ={cachedProperty.PropertyInfo.PropertyType.BaseType}",
-//                  $"HasElementType ={cachedProperty.PropertyInfo.PropertyType.HasElementType}",
-//                  $"attributes = {attributes.Select(a => a.GetType().Name).Aggregate((a, b) => a + "," + b)}",
-//              }));
+                //Debug.Log(string.Join("\n", new[]
+                //{
+                //    $"cachedProperty Name={cachedProperty.PropertyInfo.Name}",
+                //    $"Value={cachedProperty.GetValue(this)} ({cachedProperty.GetValue(this)?.GetType().Name ?? "null"})",
+                //    $"Type={cachedProperty.PropertyInfo.PropertyType.Name}",
+                //    $"BaseType ={cachedProperty.PropertyInfo.PropertyType.BaseType}",
+                //    $"HasElementType ={cachedProperty.PropertyInfo.PropertyType.HasElementType}",
+                //    $"attributes = {attributes.Select(a => a.GetType().Name).Aggregate((a, b) => a + "," + b)}",
+                //}));
             }
         }
 
@@ -177,12 +173,10 @@ namespace mFramework.Saves
 
         public virtual void OnReset()
         {
-
         }
 
         public virtual void OnReload()
         {
-
         }
     }
 }

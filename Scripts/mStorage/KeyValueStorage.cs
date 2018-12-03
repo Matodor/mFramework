@@ -1,11 +1,15 @@
-﻿using System;
-using System.IO;
-using mFramework.Saves;
+﻿using mFramework.Saves;
 
 namespace mFramework.Storage
 {
     public class KeyValueStorage : IKeyValueStorage
     {
+        public static readonly KeyValueStorage Instance = new KeyValueStorage();
+
+        private KeyValueStorage()
+        {
+        }
+
         public void SetValue(string key, string value)
         {
             mStorage.AddData(key, SaveableString.Serialize(value));
