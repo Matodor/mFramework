@@ -125,7 +125,7 @@ namespace mFramework.Saves
             foreach (var pair in SaveableProperties)
             {
                 var saveableValue = (SaveableValue)pair.Value.GetValue(this);
-                var key = KeyHash(SaveKey, pair.Key);
+                var key = CombineKey(SaveKey, pair.Key);
                 mStorage.AddData(key, saveableValue.Serialize());
             }
 
@@ -139,7 +139,7 @@ namespace mFramework.Saves
             foreach (var pair in SaveableProperties)
             {
                 var saveableValue = (SaveableValue) pair.Value.GetValue(this);
-                var key = KeyHash(SaveKey, pair.Key);
+                var key = CombineKey(SaveKey, pair.Key);
 
                 byte[] data;
                 if (mStorage.GetData(key, out data))
@@ -149,9 +149,9 @@ namespace mFramework.Saves
             AfterLoad();
         }
 
-        public static ulong KeyHash(string saveableKey, string saveableValueKey)
+        public static string CombineKey(string saveableKey, string saveableValueKey)
         {
-            return KnuthHash.GetHash(saveableKey + saveableValueKey);
+            return $"{saveableKey}_{saveableValueKey}";
         }
 
         public static bool IsSaveableValue(PropertyInfo info)

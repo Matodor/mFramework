@@ -10,6 +10,7 @@
         bool GetValue(string key, out int value);
         bool GetValue(string key, out float value);
 
-        void Save();
+        bool ContainsKey(string key);
+        bool DeleteKey(string key);
     }
 }

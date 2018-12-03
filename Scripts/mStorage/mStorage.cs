@@ -23,14 +23,14 @@ namespace mFramework.Storage
         public const int Version = 1;
         public const string DbName = "mStorage.bin";
 
-        public static readonly string DBPath = 
+        public static readonly string DbPath = 
             Path.Combine(Path.GetFullPath(Application.persistentDataPath), "mFramework", DbName);
 
-        private static readonly Dictionary<ulong, byte[]> _data;
+        private static readonly Dictionary<string, byte[]> _data;
 
         static mStorage()
         {
-            _data = new Dictionary<ulong, byte[]>();
+            _data = new Dictionary<string, byte[]>();
 
             Load(StoragePassword);
             Application.quitting += ApplicationOnQuitting;
@@ -41,15 +41,22 @@ namespace mFramework.Storage
             Save(StoragePassword);
         }
 
-        /// <summary>
-        /// Clear loaded data from memory
-        /// </summary>
         public static void Clear()
         {
             _data.Clear();
         }
 
-        public static void AddData(ulong key, byte[] data)
+        public static bool RemoveKey(string key)
+        {
+            return _data.Remove(key);
+        }
+
+        public static bool ContainsKey(string key)
+        {
+            return _data.ContainsKey(key);
+        }
+
+        public static void AddData(string key, byte[] data)
         {
             if (_data.ContainsKey(key))
                 _data[key] = data;
@@ -57,7 +64,7 @@ namespace mFramework.Storage
                 _data.Add(key, data);
         }
 
-        public static bool GetData(ulong key, out byte[] data)
+        public static bool GetData(string key, out byte[] data)
         {
             return _data.TryGetValue(key, out data);
         }
@@ -76,10 +83,10 @@ namespace mFramework.Storage
             return CheckEOF(stream, Marshal.SizeOf<T>());
         }
 
-        private static bool Save(string storagePassword)
+        public static bool Save(string storagePassword)
         {
-            Debug.Log($"[mStorage] Save file ({DBPath})");
-            var directory = Path.GetDirectoryName(DBPath);
+            Debug.Log($"[mStorage] Save file ({DbPath})");
+            var directory = Path.GetDirectoryName(DbPath);
 
             if (!Directory.Exists(directory))
             {
@@ -90,7 +97,7 @@ namespace mFramework.Storage
                 }
                 catch (Exception e)
                 {
-                    Debug.LogWarning($"[mStorage] Create directory ({DBPath}) error ({e})");
+                    Debug.LogWarning($"[mStorage] Create directory ({DbPath}) error ({e})");
                     return false;
                 }
             }
@@ -98,12 +105,12 @@ namespace mFramework.Storage
             Stream stream;
             try
             {
-                stream = File.Open(DBPath, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+                stream = File.Open(DbPath, FileMode.OpenOrCreate, FileAccess.ReadWrite);
                 stream.SetLength(0);
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"[mStorage] Save file ({DBPath}) error ({e})");
+                Debug.LogWarning($"[mStorage] Save file ({DbPath}) error ({e})");
                 return false;
             }
 
@@ -120,9 +127,9 @@ namespace mFramework.Storage
                 Mode = CipherMode.CBC,
                 Padding = PaddingMode.Zeros
             };
-            var keyBytes = new Rfc2898DeriveBytes(storagePassword, 
+            var storageKeyBytes = new Rfc2898DeriveBytes(storagePassword, 
                 Encoding.UTF8.GetBytes(SaltKey)).GetBytes(KeyLength / 8);
-            var encryptor = symmetricKey.CreateEncryptor(keyBytes, 
+            var encryptor = symmetricKey.CreateEncryptor(storageKeyBytes, 
                 Encoding.UTF8.GetBytes(VIKey));
 
             var dataStart = stream.Position;
@@ -130,11 +137,13 @@ namespace mFramework.Storage
 
             foreach (var pair in _data)
             {
+                var keyBytes = Encoding.UTF8.GetBytes(pair.Key);
                 cryptoStream.WriteStruct(new DataFileItem()
                 {
-                    Key = pair.Key,
+                    KeySize = (byte) keyBytes.Length,
                     DataSize = pair.Value.Length, 
                 });
+                cryptoStream.Write(keyBytes, 0, keyBytes.Length);
                 cryptoStream.Write(pair.Value, 0, pair.Value.Length);
             }
             cryptoStream.FlushFinalBlock();
@@ -152,25 +161,25 @@ namespace mFramework.Storage
             return true;
         }
 
-        private static void Load(string storagePassword)
+        public static void Load(string storagePassword)
         {
             Stream stream;
-            if (File.Exists(DBPath))
+            if (File.Exists(DbPath))
             {
-                Debug.Log($"[mStorage] Load storage, path={DBPath}");
+                Debug.Log($"[mStorage] Load storage, path={DbPath}");
                 try
                 {
-                    stream = File.Open(DBPath, FileMode.Open, FileAccess.ReadWrite);
+                    stream = File.Open(DbPath, FileMode.Open, FileAccess.ReadWrite);
                 }
                 catch (Exception e)
                 {
-                    Debug.LogWarning($"[mStorage] Load file ({DBPath}) error ({e})");
+                    Debug.LogWarning($"[mStorage] Load file ({DbPath}) error ({e})");
                     return;
                 }
             }
             else
             {
-                Debug.LogWarning($"[mStorage] File not found ({DBPath})");
+                Debug.LogWarning($"[mStorage] File not found ({DbPath})");
                 return;
             }
 
@@ -200,14 +209,12 @@ namespace mFramework.Storage
                 Mode = CipherMode.CBC,
                 Padding = PaddingMode.None
             };
-            var keyBytes = new Rfc2898DeriveBytes(storagePassword, 
+            var storageKeyBytes = new Rfc2898DeriveBytes(storagePassword, 
                 Encoding.UTF8.GetBytes(SaltKey)).GetBytes(KeyLength / 8);
-            var decryptor = symmetricKey.CreateDecryptor(keyBytes, 
+            var decryptor = symmetricKey.CreateDecryptor(storageKeyBytes, 
                 Encoding.UTF8.GetBytes(VIKey));
 
             var cryptoStream = new CryptoStream(stream, decryptor, CryptoStreamMode.Read);
-            var sizeOfFileItem = Marshal.SizeOf<DataFileItem>();
-
             using (var memoryStream = new MemoryStream())
             {
                 var buffer = new byte[2048];
@@ -219,22 +226,30 @@ namespace mFramework.Storage
                 stream.Close();
                 memoryStream.Seek(0, SeekOrigin.Begin);
 
+                var sizeOfFileItem = Marshal.SizeOf<DataFileItem>();
                 for (var i = 0; i < header.ItemsNum; i++)
                 {
                     if (CheckEOF(memoryStream, sizeOfFileItem))
                         return;
-
+                    
                     var fileItem = memoryStream.ReadStruct<DataFileItem>();
-                    if (CheckEOF(memoryStream, fileItem.DataSize))
+                    if (CheckEOF(memoryStream, fileItem.KeySize + fileItem.DataSize))
                         return;
 
-                    var data = new byte[fileItem.DataSize];
-                    if (memoryStream.Read(data, 0, data.Length) == fileItem.DataSize)
-                        _data.Add(fileItem.Key, data);
-                    else 
-                        break;
+                    var keyBytes = new byte[fileItem.KeySize];
+                    if (memoryStream.Read(keyBytes, 0, keyBytes.Length) == fileItem.KeySize)
+                    {
+                        var key = Encoding.UTF8.GetString(keyBytes);
+                        var data = new byte[fileItem.DataSize];
 
-                    //Debug.Log($"Add data key={fileItem.Key} size={fileItem.DataSize}");
+                        if (memoryStream.Read(data, 0, data.Length) == fileItem.DataSize)
+                            _data.Add(key, data);
+                        else 
+                            break;
+
+                        Debug.Log($"Add data key={key} size={fileItem.DataSize}");
+                    }
+                    else break;
                 }
             }
 

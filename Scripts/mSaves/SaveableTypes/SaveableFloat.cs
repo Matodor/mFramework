@@ -2,14 +2,9 @@
 
 namespace mFramework.Saves
 {
-    public class SaveableInt : SaveableValue<int>
+    public class SaveableFloat : SaveableValue<float>
     {
-        public override string ToString()
-        {
-            return Value.ToString();
-        }
-
-        public static byte[] Serialize(int value)
+        public static byte[] Serialize(float value)
         {
             return BitConverter.GetBytes(value);
         }
@@ -19,9 +14,9 @@ namespace mFramework.Saves
             return Serialize(Value);
         }
 
-        public static int Deserialize(int startIndex, byte[] array)
+        public static float Deserialize(int startIndex, byte[] array)
         {
-            return BitConverter.ToInt32(array, startIndex);
+            return BitConverter.ToSingle(array, startIndex);
         }
 
         public override bool Deserialize(byte[] array, int startIndex)

@@ -11,7 +11,17 @@ namespace mFramework.Saves
 
         public override byte[] Serialize()
         {
-            return Encoding.UTF8.GetBytes(Value);
+            return Serialize(Value);
+        }
+
+        public static byte[] Serialize(string value)
+        {
+            return Encoding.UTF8.GetBytes(value);
+        }
+
+        public static string Deserialize(byte[] array, int startIndex, int count)
+        {
+            return Encoding.UTF8.GetString(array, startIndex, count);
         }
 
         public override bool Deserialize(byte[] array, int startIndex)
@@ -19,7 +29,7 @@ namespace mFramework.Saves
             if (array == null || array.Length == 0 || startIndex >= array.Length)
                 return false;
 
-            Value = Encoding.UTF8.GetString(array, startIndex, array.Length - startIndex);
+            Value = Deserialize(array, startIndex, array.Length - startIndex);
             return true;
         }
     }

@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using System.IO;
+using mFramework.Saves;
 
 namespace mFramework.Storage
 {
@@ -6,36 +8,38 @@ namespace mFramework.Storage
     {
         public void SetValue(string key, string value)
         {
-            PlayerPrefs.SetString(key, value);
+            mStorage.AddData(key, SaveableString.Serialize(value));
         }
 
         public void SetValue(string key, int value)
         {
-            PlayerPrefs.SetInt(key, value);
+            mStorage.AddData(key, SaveableInt.Serialize(value));
         }
 
         public void SetValue(string key, float value)
         {
-            PlayerPrefs.SetFloat(key, value);
+            mStorage.AddData(key, SaveableFloat.Serialize(value));
         }
 
         public bool GetValue(string key, out string value)
         {
-            if (PlayerPrefs.HasKey(key))
+            byte[] data;
+            if (mStorage.GetData(key, out data))
             {
-                value = PlayerPrefs.GetString(key);
+                value = SaveableString.Deserialize(data, 0, data.Length);
                 return true;
             }
 
-            value = default(string);
+            value = null;
             return false;
         }
 
         public bool GetValue(string key, out int value)
         {
-            if (PlayerPrefs.HasKey(key))
+            byte[] data;
+            if (mStorage.GetData(key, out data))
             {
-                value = PlayerPrefs.GetInt(key);
+                value = SaveableInt.Deserialize(0, data);
                 return true;
             }
 
@@ -45,9 +49,10 @@ namespace mFramework.Storage
 
         public bool GetValue(string key, out float value)
         {
-            if (PlayerPrefs.HasKey(key))
+            byte[] data;
+            if (mStorage.GetData(key, out data))
             {
-                value = PlayerPrefs.GetFloat(key);
+                value = SaveableFloat.Deserialize(0, data);
                 return true;
             }
 
@@ -55,9 +60,14 @@ namespace mFramework.Storage
             return false;
         }
 
-        public void Save()
+        public bool ContainsKey(string key)
         {
-            PlayerPrefs.Save();
+            return mStorage.ContainsKey(key);
+        }
+
+        public bool DeleteKey(string key)
+        {
+            return mStorage.RemoveKey(key);
         }
     }
 }
