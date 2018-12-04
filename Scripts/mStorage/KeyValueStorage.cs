@@ -10,19 +10,19 @@ namespace mFramework.Storage
         {
         }
 
-        public void SetValue(string key, string value)
+        public bool SetValue(string key, string value)
         {
-            mStorage.AddData(key, SaveableString.Serialize(value));
+            return value != null && mStorage.AddData(key, SaveableString.Serialize(value));
         }
 
-        public void SetValue(string key, int value)
+        public bool SetValue(string key, int value)
         {
-            mStorage.AddData(key, SaveableInt.Serialize(value));
+            return mStorage.AddData(key, SaveableInt.Serialize(value));
         }
 
-        public void SetValue(string key, float value)
+        public bool SetValue(string key, float value)
         {
-            mStorage.AddData(key, SaveableFloat.Serialize(value));
+            return mStorage.AddData(key, SaveableFloat.Serialize(value));
         }
 
         public bool GetValue(string key, out string value)

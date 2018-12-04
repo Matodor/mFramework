@@ -16,7 +16,9 @@ namespace mFramework.Saves
 
         public static byte[] Serialize(string value)
         {
-            return Encoding.UTF8.GetBytes(value);
+            return value == null 
+                ? null 
+                : Encoding.UTF8.GetBytes(value);
         }
 
         public static string Deserialize(byte[] array, int startIndex, int count)

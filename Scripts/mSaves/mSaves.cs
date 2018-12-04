@@ -27,12 +27,12 @@ namespace mFramework.Saves
             }
         }
 
-        public static void Load()
+        public static bool Load()
         {
             if (!mStorage.Loaded)
             {
                 Debug.LogWarning("[mSaves] mStorage not loaded, use method mStorage.Load first");
-                return;
+                return false;
             }
 
             int savesVersion;
@@ -43,6 +43,8 @@ namespace mFramework.Saves
             {
                 pair.Value.Load();
             }
+
+            return true;
         }
 
         public static void Add(IEnumerable<Saveable> saveables)
@@ -63,19 +65,25 @@ namespace mFramework.Saves
             _saveables.Clear();
         }
 
-        public static void Remove(Saveable saveable)
+        public static bool Remove(Saveable saveable)
         {
-
+            return _saveables.Remove(saveable.SaveKey);
         }
 
         public static void Reset()
         {
-
+            foreach (var pair in _saveables)
+            {
+                pair.Value.OnReset();
+            }
         }
 
         public static void Reload()
         {
-
+            foreach (var pair in _saveables)
+            {
+                pair.Value.Load();
+            }
         }
     }
 }

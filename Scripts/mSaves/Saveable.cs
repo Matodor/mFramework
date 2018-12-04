@@ -117,13 +117,22 @@ namespace mFramework.Saves
         public virtual void Save()
         {
             BeforeSave();
-
+            
+            var list = new List<byte>();
             foreach (var pair in SaveableProperties)
             {
-                var saveableValue = (SaveableValue)pair.Value.GetValue(this);
+                var saveableValue = (SaveableValue) pair.Value.GetValue(this);
+                var data = saveableValue.Serialize();
+                if (data == null || data.Length == 0)
+                    continue;
+
                 var key = CombineKey(SaveKey, pair.Key);
-                mStorage.AddData(key, saveableValue.Serialize());
+                mStorage.AddData(key, data);
+                list.AddRange(data);
             }
+
+            var checksum = Crc32.ComputeChecksum(list.ToArray());
+            Debug.Log($"[mSaves] Saved {SaveKey} with crc={checksum}");
 
             AfterSave();
         }
@@ -132,6 +141,7 @@ namespace mFramework.Saves
         {
             BeforeLoad();
 
+            var list = new List<byte>();
             foreach (var pair in SaveableProperties)
             {
                 var saveableValue = (SaveableValue) pair.Value.GetValue(this);
@@ -139,8 +149,13 @@ namespace mFramework.Saves
 
                 byte[] data;
                 if (mStorage.GetData(key, out data))
+                {
                     saveableValue.Deserialize(data, 0);
+                    list.AddRange(data);
+                }
             }
+            var checksum = Crc32.ComputeChecksum(list.ToArray());
+            Debug.Log($"[mSaves] Loaded {SaveKey} with crc={checksum}");
 
             AfterLoad();
         }

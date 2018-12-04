@@ -4,14 +4,15 @@ namespace mFramework.UI
 {
     public abstract class UIObject : MonoBehaviour
     {
-        void Start()
+        public virtual void Awake()
         {
 
         }
 
-        void Update()
-        {
-
-        }
+        protected virtual void Start() {}
+        protected virtual void Update() {}
+        protected virtual void OnEnable() {}
+        protected virtual void OnDisable() {}
+        protected virtual void OnDestroy() {}
     }
 }

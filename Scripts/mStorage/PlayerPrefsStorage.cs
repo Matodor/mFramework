@@ -16,19 +16,22 @@ namespace mFramework.Storage
             PlayerPrefs.Save();
         }
 
-        public void SetValue(string key, string value)
+        public bool SetValue(string key, string value)
         {
             PlayerPrefs.SetString(key, value);
+            return true;
         }
 
-        public void SetValue(string key, int value)
+        public bool SetValue(string key, int value)
         {
             PlayerPrefs.SetInt(key, value);
+            return true;
         }
 
-        public void SetValue(string key, float value)
+        public bool SetValue(string key, float value)
         {
             PlayerPrefs.SetFloat(key, value);
+            return true;
         }
 
         public bool GetValue(string key, out string value)

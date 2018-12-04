@@ -5,7 +5,7 @@
         public static ulong GetHash(string str)
         {
             var hash = 5381UL;
-            for (int i = 0; i < str.Length; i++)
+            for (var i = 0; i < str.Length; i++)
                 hash = ((hash << 5) + hash) + str[i]; /* hash * 33 + c */
 
             return hash;

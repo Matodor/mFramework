@@ -47,12 +47,17 @@ namespace mFramework.Storage
             return _data.ContainsKey(key);
         }
 
-        public static void AddData(string key, byte[] data)
+        public static bool AddData(string key, byte[] data)
         {
+            if (data == null || data.Length == 0)
+                return false;
+
             if (_data.ContainsKey(key))
                 _data[key] = data;
             else 
                 _data.Add(key, data);
+
+            return true;
         }
 
         public static bool GetData(string key, out byte[] data)
