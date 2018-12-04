@@ -13,6 +13,7 @@ namespace mFramework.Saves
     public abstract class Saveable
     {
         public readonly string SaveKey;
+        public bool IsModified { get; private set; }
 
         protected readonly Dictionary<string, CachedProperty> SaveableProperties;
 
@@ -28,6 +29,7 @@ namespace mFramework.Saves
             if (saveKey.Length > KeyAttribute.MaxKeyLength)
                 throw new Exception($"Saveable key max length={KeyAttribute.MaxKeyLength} ({saveKey})");
 
+            IsModified = false;
             SaveableProperties = new Dictionary<string, CachedProperty>();
             SaveKey = saveKey;
             var cachedType = mCore.GetCachedType(GetType());
@@ -131,8 +133,9 @@ namespace mFramework.Saves
                 list.AddRange(data);
             }
 
-            var checksum = Crc32.ComputeChecksum(list.ToArray());
-            Debug.Log($"[mSaves] Saved {SaveKey} with crc={checksum}");
+            var crc = Crc32.ComputeChecksum(list.ToArray());
+            KeyValueStorage.Instance.SetValue($"_crc_{SaveKey}", crc);
+            Debug.Log($"[mSaves] Saved {SaveKey} with gotcrc={crc}");
 
             AfterSave();
         }
@@ -154,8 +157,22 @@ namespace mFramework.Saves
                     list.AddRange(data);
                 }
             }
-            var checksum = Crc32.ComputeChecksum(list.ToArray());
-            Debug.Log($"[mSaves] Loaded {SaveKey} with crc={checksum}");
+
+            var crc = Crc32.ComputeChecksum(list.ToArray());
+            uint wantedCrc;
+
+            if (KeyValueStorage.Instance.GetValue($"_crc_{SaveKey}", out wantedCrc))
+            {
+                if (crc != wantedCrc)
+                {
+                    IsModified = true;
+                    Debug.LogWarning($"[mSaves] Loaded {SaveKey} with gotcrc={crc} wantedcrc={wantedCrc}");
+                }
+                else
+                    Debug.Log($"[mSaves] Loaded {SaveKey} with gotcrc={crc} wantedcrc={wantedCrc}");
+            }
+            else
+                Debug.Log($"[mSaves] Loaded {SaveKey} with crc={crc}");
 
             AfterLoad();
         }

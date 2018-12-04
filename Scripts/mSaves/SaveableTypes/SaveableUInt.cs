@@ -2,14 +2,14 @@
 
 namespace mFramework.Saves
 {
-    public class SaveableInt : SaveableValue<int>
+    public class SaveableUInt : SaveableValue<uint>
     {
         public override string ToString()
         {
             return Value.ToString("N");
         }
 
-        public static byte[] Serialize(int value)
+        public static byte[] Serialize(uint value)
         {
             return BitConverter.GetBytes(value);
         }
@@ -19,14 +19,14 @@ namespace mFramework.Saves
             return Serialize(Value);
         }
 
-        public static int Deserialize(int startIndex, byte[] array)
+        public static uint Deserialize(int startIndex, byte[] array)
         {
-            return BitConverter.ToInt32(array, startIndex);
+            return BitConverter.ToUInt32(array, startIndex);
         }
 
         public override bool Deserialize(byte[] array, int startIndex)
         {
-            if (array == null || array.Length == 0 || startIndex + sizeof(int) > array.Length)
+            if (array == null || array.Length == 0 || startIndex + sizeof(uint) > array.Length)
                 return false;
 
             Value = Deserialize(startIndex, array);

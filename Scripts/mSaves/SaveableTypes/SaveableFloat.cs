@@ -26,7 +26,7 @@ namespace mFramework.Saves
 
         public override bool Deserialize(byte[] array, int startIndex)
         {
-            if (array == null || array.Length == 0 || startIndex + 4 > array.Length)
+            if (array == null || array.Length == 0 || startIndex + sizeof(float) > array.Length)
                 return false;
 
             Value = Deserialize(startIndex, array);

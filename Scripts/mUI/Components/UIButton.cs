@@ -1,7 +1,4 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
-
-namespace mFramework.UI
+﻿namespace mFramework.UI
 {
     public class UIButton : UIComponent
     {

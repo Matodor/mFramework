@@ -40,11 +40,11 @@ namespace mFramework.Core
 
             gen.Emit(OpCodes.Ldarg_0);
             gen.Emit(OpCodes.Castclass, info.DeclaringType);
+            gen.Emit(OpCodes.Callvirt, info.GetGetMethod(true));
 
             if (info.PropertyType.IsValueType)
                 gen.Emit(OpCodes.Box, info.PropertyType);
 
-            gen.Emit(OpCodes.Callvirt, info.GetGetMethod(true));
             gen.Emit(OpCodes.Ret);
 
             return (CachedPropertyGetter) method.CreateDelegate(typeof(CachedPropertyGetter));
@@ -60,7 +60,11 @@ namespace mFramework.Core
             gen.Emit(OpCodes.Ldarg_0);
             gen.Emit(OpCodes.Castclass, info.DeclaringType);
             gen.Emit(OpCodes.Ldarg_1);
-            gen.Emit(OpCodes.Unbox_Any, info.PropertyType);
+
+            gen.Emit(info.PropertyType.IsValueType 
+                ? OpCodes.Unbox_Any 
+                : OpCodes.Castclass, info.PropertyType);
+
             gen.Emit(OpCodes.Callvirt, info.GetSetMethod(true));
             gen.Emit(OpCodes.Ret);
 

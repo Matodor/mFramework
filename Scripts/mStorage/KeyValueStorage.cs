@@ -25,6 +25,11 @@ namespace mFramework.Storage
             return mStorage.AddData(key, SaveableFloat.Serialize(value));
         }
 
+        public bool SetValue(string key, uint value)
+        {
+            return mStorage.AddData(key, SaveableUInt.Serialize(value));
+        }
+
         public bool GetValue(string key, out string value)
         {
             byte[] data;
@@ -61,6 +66,19 @@ namespace mFramework.Storage
             }
 
             value = default(float);
+            return false;
+        }
+
+        public bool GetValue(string key, out uint value)
+        {
+            byte[] data;
+            if (mStorage.GetData(key, out data))
+            {
+                value = SaveableUInt.Deserialize(0, data);
+                return true;
+            }
+
+            value = default(uint);
             return false;
         }
 
