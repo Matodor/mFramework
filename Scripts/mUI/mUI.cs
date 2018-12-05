@@ -4,7 +4,14 @@ namespace mFramework.UI
 {
     public static class mUI
     {
-        public static T Create<T>(UIObject parent = null) where T : UIObject
+        public static T Component<T>(UIView parent = null) 
+            where T : UIComponent
+        {
+            return new GameObject(typeof(T).Name).AddComponent<T>();
+        }
+
+        public static T View<T>(UIView parent = null)
+            where T : UIView
         {
             return new GameObject(typeof(T).Name).AddComponent<T>();
         }

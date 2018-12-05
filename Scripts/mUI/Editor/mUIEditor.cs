@@ -3,32 +3,6 @@ using UnityEngine;
 
 namespace mFramework.Editor.UI
 {
-    public class TestWindow : EditorWindow
-    {
-        void OnDisable()
-        {
-            Debug.Log("OnDisable");
-        }
-
-        void OnEnable()
-        {
-            titleContent.text = "asd";
-            Debug.Log("OnEnable");
-        }
-
-        private void OnGUI()
-        {
-            GUILayout.BeginHorizontal(new GUIStyle() {alignment = TextAnchor.LowerRight});
-            GUILayout.Label(new GUIContent("asd"), new GUIStyle() { fontStyle = FontStyle.BoldAndItalic, stretchWidth = false});
-            GUILayout.Label(new GUIContent("asd"), new GUIStyle() { fontStyle = FontStyle.BoldAndItalic, stretchWidth = false});
-            GUILayout.Label(new GUIContent("asd"), new GUIStyle() { fontStyle = FontStyle.BoldAndItalic, stretchWidth = false});
-            GUILayout.Label(new GUIContent("asd"), new GUIStyle() { fontStyle = FontStyle.BoldAndItalic, stretchWidth = false});
-            GUILayout.Label(new GUIContent("asd"), new GUIStyle() { fontStyle = FontStyle.BoldAndItalic, stretchWidth = false});
-            GUILayout.Label(new GUIContent("asd"), new GUIStyle() { fontStyle = FontStyle.BoldAndItalic, stretchWidth = false});
-            GUILayout.EndHorizontal();
-        }
-    }
-
     [InitializeOnLoad]
     public static class mUIEditor
     {
@@ -37,11 +11,23 @@ namespace mFramework.Editor.UI
             Debug.Log("mUIEditor1");
             Debug.Log("mUIEditor2");
 
-            //EditorWindow.GetWindow<TestWindow>();
+            EditorApplication.playModeStateChanged += EditorApplicationOnPlayModeStateChanged;
+            EditorApplication.hierarchyChanged += EditorApplicationOnHierarchyChanged;
+            EditorApplication.update += Update;
+        }
+
+        private static void EditorApplicationOnPlayModeStateChanged(PlayModeStateChange state)
+        {
+            Debug.Log($"state = {state}");
         }
 
         private static void Update()
         {
+        }
+
+        private static void EditorApplicationOnHierarchyChanged()
+        {
+            //Debug.Log("EditorApplicationOnHierarchyChanged");
         }
     }
 }

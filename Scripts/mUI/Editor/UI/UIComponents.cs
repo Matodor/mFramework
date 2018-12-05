@@ -14,9 +14,16 @@ namespace mFramework.Editor.UI
             return Create<UIButton>();
         }
 
-        private static T Create<T>() where T : UIObject
+        private static T Create<T>() where T : UIComponent
         {
-            var component = mUI.Create<T>();
+            var component = mUI.Component<T>();
+
+            if (Selection.activeGameObject != null)
+            {
+                GameObjectUtility.SetParentAndAlign(
+                    component.gameObject, Selection.activeGameObject);
+            }
+
             Undo.RegisterCreatedObjectUndo(component.gameObject,
                 $"Create {component.name}");
             Selection.activeGameObject = component.gameObject;
