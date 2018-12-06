@@ -34,7 +34,7 @@ namespace mFramework.Editor.UI.Windows
             if (GUILayout.Button("Generate View"))
             {
                 ViewClassGenerator.View(
-                    @namespace: _namespace,
+                    nameSpace: _namespace,
                     className: _viewName,
                     savePath: _savePath
                 );

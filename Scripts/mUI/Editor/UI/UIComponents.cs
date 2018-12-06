@@ -16,7 +16,7 @@ namespace mFramework.Editor.UI
 
         private static T Create<T>() where T : UIComponent
         {
-            var component = mUI.Component<T>();
+            var component = mUI.Create<T>();
 
             if (Selection.activeGameObject != null)
             {

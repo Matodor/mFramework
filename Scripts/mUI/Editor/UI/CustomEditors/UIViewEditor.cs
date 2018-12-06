@@ -30,27 +30,23 @@ namespace mFramework.Editor.UI
         } 
 
         public override void OnInspectorGUI()
-        { 
+        {
             base.OnInspectorGUI();
 
-            EditorGUILayout.IntField("Child views", _view.ChildViews.Count, GUIStyle.none);
-            EditorGUILayout.IntField("Child components", _view.ChildComponents.Count, GUIStyle.none);
+            //EditorGUILayout.IntField("Child views", _view.ChildViews.Count, GUIStyle.none);
+            //EditorGUILayout.IntField("Child components", _view.ChildComponents.Count, GUIStyle.none);
 
             _show = EditorGUILayout.Foldout(_show, "Generate settings");
             if (_show)
             {
                 _view.Namespace = EditorGUILayout.TextField(
                     "Namespace", _view.Namespace);
-                _view.GeneratePath = EditorGUILayout.TextField(
-                    "Path", _view.GeneratePath);
+                _view.SavePath = EditorGUILayout.TextField(
+                    "Path", _view.SavePath);
 
                 if (GUILayout.Button("Save View"))
                 {
-                    ViewClassGenerator.View(
-                        @namespace: _view.Namespace, 
-                        className: _view.GetType().Name, 
-                        savePath: _view.GeneratePath
-                    );
+                    ViewClassGenerator.View(_view);
                 }
             }
         }

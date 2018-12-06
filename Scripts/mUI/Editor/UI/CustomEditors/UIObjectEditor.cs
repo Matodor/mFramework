@@ -25,6 +25,7 @@ namespace mFramework.Editor.UI
 
         public override void OnInspectorGUI()
         {
+            base.OnInspectorGUI();
             EditorGUI.BeginDisabledGroup(true);
             EditorGUILayout.LongField("GUID", (long) _object.GUID);
             EditorGUI.EndDisabledGroup();

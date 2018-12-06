@@ -2,7 +2,8 @@
 
 namespace mFramework.UI
 {
-    public abstract partial class UIObject : MonoBehaviour
+    [DisallowMultipleComponent]
+    public abstract class UIObject : MonoBehaviour
     {
         public UIView Parent { get; private set; }
         public ulong GUID { get; private set; }
@@ -23,6 +24,11 @@ namespace mFramework.UI
         protected virtual void OnEnable() {}
         protected virtual void OnDisable() {}
         protected virtual void OnDestroy() {}
+
+        public void Destroy()
+        {
+            Destroy(gameObject);
+        }
 
         protected virtual void OnTransformChildrenChanged()
         {
