@@ -1,15 +1,23 @@
-﻿using UnityEditor;
+﻿using System.Globalization;
+using System.Threading;
+using UnityEditor;
 using UnityEngine;
 
 namespace mFramework.Editor.UI
 {
     [InitializeOnLoad]
-    public static class mUIEditor
+    public static class mEditor
     {
-        static mUIEditor()
+        static mEditor()
         {
-            Debug.Log("mUIEditor1");
-            Debug.Log("mUIEditor2");
+            if (Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator != ".")
+            {
+                var definition = (CultureInfo) Thread.CurrentThread.CurrentCulture.Clone();
+                definition.NumberFormat.NumberDecimalSeparator = ".";
+                Thread.CurrentThread.CurrentCulture = definition;
+            }
+
+            Debug.Log("[mEditor] Attached");
 
             EditorApplication.playModeStateChanged += EditorApplicationOnPlayModeStateChanged;
             EditorApplication.hierarchyChanged += EditorApplicationOnHierarchyChanged;

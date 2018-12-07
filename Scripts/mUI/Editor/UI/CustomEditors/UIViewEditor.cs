@@ -44,7 +44,7 @@ namespace mFramework.Editor.UI
                 _view.SavePath = EditorGUILayout.TextField(
                     "Path", _view.SavePath);
 
-                if (GUILayout.Button("Save View"))
+                if (GUILayout.Button($"Update '{_view.GetType().Name}' class"))
                 {
                     ViewClassGenerator.View(_view);
                 }

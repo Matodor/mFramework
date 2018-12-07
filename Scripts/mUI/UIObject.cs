@@ -1,40 +1,65 @@
-﻿using UnityEngine;
+﻿using JetBrains.Annotations;
+using UnityEngine;
+using UnityEngine.UI;
 
 namespace mFramework.UI
 {
     [DisallowMultipleComponent]
     public abstract class UIObject : MonoBehaviour
     {
-        public UIView Parent { get; private set; }
         public ulong GUID { get; private set; }
+
+        public RectTransform RectTransform { get; private set; }
+
+        #region Events
+        public event UIEventHandler<UIObject> Destroyed;
+        #endregion
 
         private static ulong _guid;
 
         protected virtual void Awake()
         {
             GUID = ++_guid;
+            RectTransform = gameObject.AddComponent<RectTransform>();
+            RectTransform.sizeDelta = Vector2.one;
         }
 
 #if UNITY_EDITOR
+        // ReSharper disable once UnusedMember.Global
         protected virtual void Reset() {}
 #endif
 
+        // ReSharper disable once UnusedMember.Global
         protected virtual void Start() { }
-        protected virtual void Update() {}
-        protected virtual void OnEnable() {}
-        protected virtual void OnDisable() {}
-        protected virtual void OnDestroy() {}
 
+        // ReSharper disable once UnusedMember.Global
+        protected virtual void Update() { }
+
+        // ReSharper disable once UnusedMember.Global
+        protected virtual void OnEnable() { }
+
+        // ReSharper disable once UnusedMember.Global
+        protected virtual void OnDisable() { }
+
+        // ReSharper disable once UnusedMember.Global
+        protected virtual void OnDestroy()
+        {
+            Destroyed?.Invoke(this);
+        }
+
+        // ReSharper disable once UnusedMember.Global
         public void Destroy()
         {
             Destroy(gameObject);
         }
 
+        // ReSharper disable once UnusedMember.Global
         protected virtual void OnTransformChildrenChanged()
         {
             //Debug.Log($"OnTransformChildrenChanged {GetType().Name}");
         }
 
+        // ReSharper disable once UnusedMember.Global
         protected virtual void OnTransformParentChanged()
         {
             //Debug.Log($"OnTransformParentChanged {GetType().Name}");

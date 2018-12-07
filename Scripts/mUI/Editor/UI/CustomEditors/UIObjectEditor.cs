@@ -1,9 +1,10 @@
 ﻿using mFramework.UI;
 using UnityEditor;
+using UnityEngine;
 
 namespace mFramework.Editor.UI
 {
-    //[CustomEditor(typeof(UIObject), true)]
+    [CustomEditor(typeof(UIObject), true)]
     public class UIObjectEditor : UnityEditor.Editor
     {
         private UIObject _object;
@@ -27,8 +28,13 @@ namespace mFramework.Editor.UI
         {
             base.OnInspectorGUI();
             EditorGUI.BeginDisabledGroup(true);
-            EditorGUILayout.LongField("GUID", (long) _object.GUID);
+            EditorGUILayout.LongField("GUID", (long)_object.GUID);
             EditorGUI.EndDisabledGroup();
+
+            if (GUILayout.Button("tst"))
+            {
+                DestroyImmediate(_object.gameObject);
+            }
         }
     }
 }

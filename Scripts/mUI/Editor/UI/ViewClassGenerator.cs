@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using mFramework.Editor.Extensions;
 using mFramework.UI;
 using UnityEditor;
 using UnityEngine;
@@ -43,9 +44,21 @@ namespace mFramework.Editor.UI
                 if (child == null)
                     continue;
 
+                var childView = child as UIView;
+                if (childView != null)
+                {
+                    if (view.GetType() == childView.GetType())
+                        throw new Exception("Nested views of same type are prohibited");
+
+                    View(childView);
+                }
+
                 var identifier = ParseIdentifier(child.name);
                 if (string.IsNullOrWhiteSpace(identifier))
                     throw new Exception("Invalid identifier");
+
+                if (identifier == child.GetType().Name)
+                    identifier = $"{child.GetType().Name}1";
 
                 var repeats = 0;
                 var cleanIdentifier = identifier;
@@ -83,11 +96,12 @@ namespace mFramework.Editor.UI
                 NewLine();
                 OverrideMethod("Initialize", content: () =>
                 {
+                    DirectiveRegion("Initialize components");
                     foreach (var pair in childs)
                     {
-                        CreateUIObject(pair.Key, pair.Value.GetType());
-                        SetObjectName(pair.Key, pair.Key);
+                        InitializeObject(pair.Key, pair.Value);
                     }
+                    DirectiveEndRegion();
                 });
                 // TODO 
                 //NewLine();
@@ -129,6 +143,15 @@ namespace mFramework.Editor.UI
             );
         }
 
+        private void InitializeObject(string identifier, UIObject value)
+        {
+            CreateUIObject(identifier, value.GetType());
+            SetObjectName(identifier, identifier);
+            SetHideFlags(identifier, HideFlags.DontSave);
+            SetLocalPosition(identifier, value.transform.localPosition);
+            SetLocalEulerAngles(identifier, value.transform.localEulerAngles);
+        }
+
         private void CreateView(string nameSpace, string className, 
             string savePath, InsertContent afterProps, InsertContent afterCtor)
         {
@@ -150,6 +173,9 @@ namespace mFramework.Editor.UI
                 return;
             }
 
+            if (className.Contains("View") == false)
+                className = className + "View";
+
             var path = Path.GetFullPath(Path.Combine(BasePath, savePath));
             CheckDirectory(path);
             path = Path.Combine(path, $"{className}.cs");
@@ -157,7 +183,7 @@ namespace mFramework.Editor.UI
 
             try
             {
-                using (var stream = File.Create(path))
+                using (var stream = new MemoryStream())
                 {
                     using (_writer = new StreamWriter(stream))
                     {
@@ -195,9 +221,26 @@ namespace mFramework.Editor.UI
                             ClosingBkt();
                         }
                         ClosingBkt();
+
+                        _writer.Flush();
+
+                        try
+                        {
+                            using (var fileStream = File.Create(path))
+                            {
+                                stream.Seek(0, SeekOrigin.Begin);
+                                stream.CopyTo(fileStream);
+                            }
+                        }
+                        catch (Exception exception)
+                        {
+                            Debug.LogException(exception);
+                            throw;
+                        }
                     }
                 }
 
+                _writer = null;
                 AssetDatabase.Refresh();
                 Debug.Log("Successful");
             }
@@ -227,7 +270,7 @@ namespace mFramework.Editor.UI
         private void MenuItem(string className)
         {
             DirectiveIf("UNITY_EDITOR");
-            Line($"[MenuItem(\"mFramework/mUI/Views/{className}\")]");
+            Line($"[MenuItem(\"mFramework/mUI/Views/Generated/{className}\")]");
             Line("private static void Create()");
             OpeningBkt();
             {
@@ -294,6 +337,21 @@ namespace mFramework.Editor.UI
         private void CreateUIObject(string identifier, Type type)
         {
             Line($"{identifier} = mUI.Create<{type.FullName}>(this);");
+        }
+
+        private void SetLocalEulerAngles(string identifier, Vector3 v)
+        {
+            Line($"{identifier}.transform.localEulerAngles = {v.String()};");
+        }
+
+        private void SetLocalPosition(string identifier, Vector3 v)
+        {
+            Line($"{identifier}.transform.localPosition = {v.String()};");
+        }
+
+        private void SetHideFlags(string identifier, HideFlags value)
+        {
+            Line($"{identifier}.gameObject.hideFlags = HideFlags.{value.ToString()};");
         }
 
         private void SetObjectName(string identifier, string value)

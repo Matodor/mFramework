@@ -1,14 +1,9 @@
 ﻿namespace mFramework.UI
 {
-    public class UIButton : UIComponent
+    public class UIButton : UISprite
     {
-        private UIButton()
+        protected UIButton()
         {
-        }
-
-        protected override void Awake()
-        {
-            base.Awake();
         }
     }
 }

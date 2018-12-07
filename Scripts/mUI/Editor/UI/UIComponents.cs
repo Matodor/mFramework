@@ -8,6 +8,12 @@ namespace mFramework.Editor.UI
     {
         private const string BasePath = "mFramework/mUI/Components/";
 
+        [MenuItem(BasePath + "UISprite")]
+        public static UISprite Sprite()
+        {
+            return Create<UISprite>();
+        }
+
         [MenuItem(BasePath + "UIButton")]
         public static UIButton Button()
         {
