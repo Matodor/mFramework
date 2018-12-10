@@ -31,9 +31,9 @@ namespace mFramework.Editor.UI
             EditorGUILayout.LongField("GUID", (long)_object.GUID);
             EditorGUI.EndDisabledGroup();
 
-            if (GUILayout.Button("tst"))
+            if (GUILayout.Button("test"))
             {
-                DestroyImmediate(_object.gameObject);
+                _object.RectTransform.ForceUpdateRectTransforms();
             }
         }
     }

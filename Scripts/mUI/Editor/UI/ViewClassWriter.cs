@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace mFramework.Editor.UI
 {
-    public class ViewClassGenerator
+    public class ViewClassWriter
     {
         public static string BasePath => Application.dataPath;
 
@@ -19,7 +19,7 @@ namespace mFramework.Editor.UI
         private StreamWriter _writer;
         private int _indentLevel;
 
-        private ViewClassGenerator()
+        private ViewClassWriter()
         {
 
         }
@@ -27,12 +27,12 @@ namespace mFramework.Editor.UI
         public static void View(string nameSpace, string className,
             string savePath)
         {
-            new ViewClassGenerator().CreateView(nameSpace, className, savePath, null, null);
+            new ViewClassWriter().CreateView(nameSpace, className, savePath, null, null);
         }
 
         public static void View(UIView view)
         {
-            new ViewClassGenerator().FillView(view);
+            new ViewClassWriter().FillView(view);
         }
 
         private void FillView(UIView view)
@@ -89,49 +89,29 @@ namespace mFramework.Editor.UI
             InsertContent afterCtor = () =>
             {
                 NewLine();
-                OverrideMethod("Awake", content: () =>
-                {
-                    Line("Initialize();");
-                });
-                NewLine();
                 OverrideMethod("Initialize", content: () =>
                 {
+                    InitializeObject("this", view.GetType().Name, view);
+                    NewLine();
+
                     DirectiveRegion("Initialize components");
                     foreach (var pair in childs)
                     {
-                        InitializeObject(pair.Key, pair.Value);
+                        Line($"Initialize_{pair.Key}();");
                     }
                     DirectiveEndRegion();
                 });
-                // TODO 
-                //NewLine();
-                //OverrideMethod("OnDestroy", content: () =>
-                //{
-                //    DirectiveIf("UNITY_EDITOR");
-                //    DirectiveElse();
-                //    foreach (var pair in childs)
-                //    {
-                //        Tab(1); Line($"Destroy({pair.Key});");
-                //    }
-                //    DirectiveEndIf();
 
-                //    foreach (var pair in childs)
-                //    {
-                //        If($"{pair.Key} != null");
-                //        OpeningBkt();
-                //        {
-                //            DirectiveIf("UNITY_EDITOR");
-                //            If("Application.isPlaying");
-                //            Tab(1); Line($"Destroy({pair.Key});");
-                //            Else();
-                //            Tab(1); Line($"DestroyImmediate({pair.Key});");
-                //            DirectiveElse();
-                //            Line($"Destroy({pair.Key});");
-                //            DirectiveEndIf();
-                //        }
-                //        ClosingBkt();
-                //    }
-                //});
+                foreach (var pair in childs)
+                {
+                    NewLine();
+                    Method($"Initialize_{pair.Key}", virutal: true,
+                        content: () =>
+                        {
+                            CreateUIObject(pair.Key, pair.Value.GetType());
+                            InitializeObject(pair.Key, pair.Key, pair.Value);
+                        });
+                }
             };
 
             CreateView(
@@ -143,13 +123,23 @@ namespace mFramework.Editor.UI
             );
         }
 
-        private void InitializeObject(string identifier, UIObject value)
+        private void InitializeObject(string identifier, string goName, UIObject value)
         {
-            CreateUIObject(identifier, value.GetType());
-            SetObjectName(identifier, identifier);
-            SetHideFlags(identifier, HideFlags.DontSave);
-            SetLocalPosition(identifier, value.transform.localPosition);
-            SetLocalEulerAngles(identifier, value.transform.localEulerAngles);
+            var r = value.RectTransform;
+
+            Line($"{identifier}.gameObject.name = \"{goName}\";");
+            Line($"{identifier}.gameObject.hideFlags = HideFlags.DontSaveInBuild | HideFlags.DontSaveInEditor;");
+
+            Line($"{identifier}.RectTransform.localScale = {r.localScale.StringCtor()};");
+            Line($"{identifier}.RectTransform.localPosition = {r.localPosition.StringCtor()};");
+            Line($"{identifier}.RectTransform.localRotation = {r.localRotation.StringCtor()};");
+            Line($"{identifier}.RectTransform.anchorMax = {r.anchorMax.StringCtor()};");
+            Line($"{identifier}.RectTransform.anchorMin = {r.anchorMin.StringCtor()};");
+            Line($"{identifier}.RectTransform.offsetMax = {r.offsetMax.StringCtor()};");
+            Line($"{identifier}.RectTransform.offsetMin = {r.offsetMin.StringCtor()};");
+            Line($"{identifier}.RectTransform.pivot = {r.pivot.StringCtor()};");
+            Line($"{identifier}.RectTransform.sizeDelta = {r.sizeDelta.StringCtor()};");
+            Line($"{identifier}.RectTransform.anchoredPosition = {r.anchoredPosition.StringCtor()};");
         }
 
         private void CreateView(string nameSpace, string className, 
@@ -178,67 +168,20 @@ namespace mFramework.Editor.UI
 
             var path = Path.GetFullPath(Path.Combine(BasePath, savePath));
             CheckDirectory(path);
-            path = Path.Combine(path, $"{className}.cs");
-            Debug.Log($"Generate view: path={path}");
-
+            
             try
             {
-                using (var stream = new MemoryStream())
-                {
-                    using (_writer = new StreamWriter(stream))
-                    {
-                        BaseStructure();
-                        NewLine();
-                        Namespace(nameSpace);
-                        OpeningBkt();
-                        {
-                            ClassName(className, nameof(UIView));
-                            OpeningBkt();
-                            {
-                                DirectiveIf("UNITY_EDITOR");
-                                DirectiveRegion("EDITOR");
+                var designerPath = Path.Combine(path, $"{className}.Designer.cs");
+                Debug.Log($"Generate Designer file: {designerPath}");
 
-                                OverrideAutoProperty("string", 
-                                    nameof(UIView.SavePath), $"\"{savePath}\"");
-                                OverrideAutoProperty("string", 
-                                    nameof(UIView.Namespace), $"\"{nameSpace}\"");
+                CreateDesignerFile(nameSpace, className, savePath, 
+                    afterProps, afterCtor, designerPath);
 
-                                DirectiveEndRegion();
-                                DirectiveEndIf();
+                var partialPath = Path.Combine(path, $"{className}.cs");
+                Debug.Log($"Generate Designer file: {partialPath}");
 
-                                afterProps?.Invoke();
-
-                                NewLine();
-                                MenuItem(className);
-                                NewLine();
-
-                                Line($"private {className}()");
-                                OpeningBkt();
-                                ClosingBkt();
-
-                                afterCtor?.Invoke();
-                            }
-                            ClosingBkt();
-                        }
-                        ClosingBkt();
-
-                        _writer.Flush();
-
-                        try
-                        {
-                            using (var fileStream = File.Create(path))
-                            {
-                                stream.Seek(0, SeekOrigin.Begin);
-                                stream.CopyTo(fileStream);
-                            }
-                        }
-                        catch (Exception exception)
-                        {
-                            Debug.LogException(exception);
-                            throw;
-                        }
-                    }
-                }
+                if (!File.Exists(partialPath))
+                    CreatePartialFile(nameSpace, className, partialPath);
 
                 _writer = null;
                 AssetDatabase.Refresh();
@@ -247,6 +190,119 @@ namespace mFramework.Editor.UI
             catch (Exception e)
             {
                 Debug.LogException(e);
+            }
+        }
+
+        private void CreatePartialFile(string nameSpace, string className, string filePath)
+        {
+            using (var stream = new MemoryStream())
+            {
+                using (_writer = new StreamWriter(stream))
+                {
+                    Using("mFramework.UI");
+                    Using("UnityEngine");
+                    DirectiveIf("UNITY_EDITOR");
+                    Using("UnityEditor");
+                    DirectiveEndIf();
+                    NewLine();
+                    Namespace(nameSpace);
+                    OpeningBkt();
+                    {
+                        ClassName(className, nameof(UIView));
+                        OpeningBkt();
+                        {
+                            OverrideMethod("Awake", content: () =>
+                            {
+                                Line("Initialize();");
+                            });
+                        }
+                        ClosingBkt();
+                    }
+                    ClosingBkt();
+
+                    _writer.Flush();
+
+                    try
+                    {
+                        using (var fileStream = File.Create(filePath))
+                        {
+                            stream.Seek(0, SeekOrigin.Begin);
+                            stream.CopyTo(fileStream);
+                        }
+                    }
+                    catch (Exception exception)
+                    {
+                        Debug.LogException(exception);
+                        throw;
+                    }
+                }
+            }
+        }
+
+        private void CreateDesignerFile(string nameSpace, string className, 
+            string savePath, InsertContent afterProps, InsertContent afterCtor, 
+            string filePath)
+        {
+            using (var stream = new MemoryStream())
+            {
+                using (_writer = new StreamWriter(stream))
+                {
+                    Comment("AUTOGENERATED! NOT MODIFY THIS FILE");
+                    Using("mFramework.UI");
+                    Using("UnityEngine");
+                    DirectiveIf("UNITY_EDITOR");
+                    Using("UnityEditor");
+                    DirectiveEndIf();
+                    NewLine();
+                    Namespace(nameSpace);
+                    OpeningBkt();
+                    {
+                        ClassName(className, nameof(UIView));
+                        OpeningBkt();
+                        {
+                            DirectiveIf("UNITY_EDITOR");
+                            DirectiveRegion("EDITOR");
+
+                            OverrideAutoProperty("string",
+                                nameof(UIView.SavePath), $"\"{savePath}\"");
+                            OverrideAutoProperty("string",
+                                nameof(UIView.Namespace), $"\"{nameSpace}\"");
+
+                            DirectiveEndRegion();
+                            DirectiveEndIf();
+
+                            afterProps?.Invoke();
+
+                            NewLine();
+                            MenuItem(className);
+                            NewLine();
+
+                            Line($"private {className}()");
+                            OpeningBkt();
+                            ClosingBkt();
+
+                            afterCtor?.Invoke();
+                        }
+                        ClosingBkt();
+                    }
+                    ClosingBkt();
+
+                    _writer.Flush();
+
+                    try
+                    {
+                        using (var fileStream = File.Create(filePath))
+                        {
+                            stream.Seek(0, SeekOrigin.Begin);
+                            stream.CopyTo(fileStream);
+                        }
+                    }
+                    catch (Exception exception)
+                    {
+                        Debug.LogException(exception);
+                        throw;
+                    }
+                }
             }
         }
 
@@ -285,8 +341,8 @@ namespace mFramework.Editor.UI
         private void ClassName(string className, string parentClass)
         {
             Line(string.IsNullOrWhiteSpace(parentClass)
-                ? $"public class {className}"
-                : $"public class {className} : {parentClass}");
+                ? $"public partial class {className}"
+                : $"public partial class {className} : {parentClass}");
         }
 
         private void AutoProperty(string type, string name, 
@@ -341,12 +397,12 @@ namespace mFramework.Editor.UI
 
         private void SetLocalEulerAngles(string identifier, Vector3 v)
         {
-            Line($"{identifier}.transform.localEulerAngles = {v.String()};");
+            Line($"{identifier}.transform.localEulerAngles = {v.StringCtor()};");
         }
 
         private void SetLocalPosition(string identifier, Vector3 v)
         {
-            Line($"{identifier}.transform.localPosition = {v.String()};");
+            Line($"{identifier}.transform.localPosition = {v.StringCtor()};");
         }
 
         private void SetHideFlags(string identifier, HideFlags value)
@@ -409,16 +465,6 @@ namespace mFramework.Editor.UI
         {
             Line("{");
             _indentLevel++;
-        }
-
-        private void BaseStructure()
-        {
-            Comment("AUTOGENERATED! NOT MODIFY THIS FILE");
-            Using("mFramework.UI");
-            Using("UnityEngine");
-            DirectiveIf("UNITY_EDITOR");
-            Using("UnityEditor");
-            DirectiveEndIf();
         }
 
         private void Comment(string comment)

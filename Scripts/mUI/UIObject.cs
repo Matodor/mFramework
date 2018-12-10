@@ -1,9 +1,8 @@
-﻿using JetBrains.Annotations;
-using UnityEngine;
-using UnityEngine.UI;
+﻿using UnityEngine;
 
 namespace mFramework.UI
 {
+    [RequireComponent(typeof(RectTransform))]
     [DisallowMultipleComponent]
     public abstract class UIObject : MonoBehaviour
     {
@@ -20,13 +19,15 @@ namespace mFramework.UI
         protected virtual void Awake()
         {
             GUID = ++_guid;
-            RectTransform = gameObject.AddComponent<RectTransform>();
+            RectTransform = gameObject.GetComponent<RectTransform>();
             RectTransform.sizeDelta = Vector2.one;
         }
 
 #if UNITY_EDITOR
         // ReSharper disable once UnusedMember.Global
-        protected virtual void Reset() {}
+        protected virtual void Reset()
+        {
+        }
 #endif
 
         // ReSharper disable once UnusedMember.Global

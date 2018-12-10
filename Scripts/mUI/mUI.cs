@@ -2,17 +2,26 @@
 
 namespace mFramework.UI
 {
-    public static class mUI
+    public sealed class mUI
     {
+        public static BaseView BaseView { get; private set; }
+
+        static mUI()
+        {
+            BaseView = Create<BaseView>();
+            Debug.Log("[mUI] Ctor");
+        }
+
         public static T Create<T>(UIObject parent = null)
             where T : UIObject
         {
             if (parent == null)
-                return new GameObject(typeof(T).Name).AddComponent<T>();
+                parent = BaseView;
 
-            var o = new GameObject(typeof(T).Name).AddComponent<T>();
-            o.transform.SetParent(parent.transform);
-            return o;
+            var obj = new GameObject(typeof(T).Name).AddComponent<T>();
+            if (parent != null)
+                obj.transform.SetParent(parent.transform);
+            return obj;
         }
     }
 }

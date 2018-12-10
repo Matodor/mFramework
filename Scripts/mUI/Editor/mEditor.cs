@@ -1,14 +1,23 @@
 ﻿using System.Globalization;
+using System.IO;
 using System.Threading;
 using UnityEditor;
 using UnityEngine;
 
 namespace mFramework.Editor.UI
 {
+    // ReSharper disable once UnusedMember.Global
     [InitializeOnLoad]
-    public static class mEditor
+    public sealed class mEditor
     {
+        public static mEditor Instance { get; }
+
         static mEditor()
+        {
+            Instance = new mEditor();
+        }
+
+        private mEditor()
         {
             if (Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator != ".")
             {
@@ -16,12 +25,18 @@ namespace mFramework.Editor.UI
                 definition.NumberFormat.NumberDecimalSeparator = ".";
                 Thread.CurrentThread.CurrentCulture = definition;
             }
-
+            
             Debug.Log("[mEditor] Attached");
 
             EditorApplication.playModeStateChanged += EditorApplicationOnPlayModeStateChanged;
             EditorApplication.hierarchyChanged += EditorApplicationOnHierarchyChanged;
-            EditorApplication.update += Update;
+        }
+
+        ~mEditor()
+        {
+            EditorApplication.playModeStateChanged -= EditorApplicationOnPlayModeStateChanged;
+            EditorApplication.hierarchyChanged -= EditorApplicationOnHierarchyChanged;
+            Debug.Log("[mEditor] ~mEditor");
         }
 
         private static void EditorApplicationOnPlayModeStateChanged(PlayModeStateChange state)
@@ -29,13 +44,22 @@ namespace mFramework.Editor.UI
             Debug.Log($"state = {state}");
         }
 
-        private static void Update()
+        private static void EditorApplicationOnHierarchyChanged()
         {
         }
 
-        private static void EditorApplicationOnHierarchyChanged()
+        // ReSharper disable once UnusedMember.Local
+        [MenuItem("Assets/Build AssetBundles")]
+        private static void BuildAllAssetBundles()
         {
-            //Debug.Log("EditorApplicationOnHierarchyChanged");
+            const string folderName = "AssetBundles";
+            var filePath = Path.Combine(Application.streamingAssetsPath, folderName);
+
+            if (!Directory.Exists(filePath))
+                Directory.CreateDirectory(filePath);
+
+            BuildPipeline.BuildAssetBundles(filePath, BuildAssetBundleOptions.None, EditorUserBuildSettings.activeBuildTarget);
+            AssetDatabase.Refresh();
         }
     }
 }

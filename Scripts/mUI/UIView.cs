@@ -7,40 +7,50 @@ namespace mFramework.UI
 #endif
     public abstract class UIView : UIObject
     {
-        //public IReadOnlyDictionary<ulong, UIView> ChildViews => _childViews;
-        //public IReadOnlyDictionary<ulong, UIComponent> ChildComponents => _childComponents;
-
-        //private readonly Dictionary<ulong, UIView> _childViews;
-        //private readonly Dictionary<ulong, UIComponent> _childComponents;
-
 #if UNITY_EDITOR
         #region EDITOR
-
         public abstract string SavePath { get; set; }
         public abstract string Namespace { get; set; }
-
         #endregion
 #endif
 
         protected UIView()
         {
-            //_childViews = new Dictionary<ulong, UIView>();
-            //_childComponents = new Dictionary<ulong, UIComponent>();
         }
 
         protected virtual void Initialize()
         {
-            
-        }
-         
-        //public void AddComponent(UIComponent child)
-        //{
-        //    _childComponents.Add(child.GUID, child);
-        //}
 
-        //public void RemoveComponent(UIComponent child)
-        //{
-        //    _childComponents.Remove(child.GUID);
-        //}
+        }
+
+        protected virtual void InitializeObject(
+            UIObject obj,
+            string goName,
+            HideFlags goHideFlags,
+            Vector3 localPos, 
+            Vector3 localScale,
+            Vector3 localEulerAngles,
+            Vector2 anchorMax, Vector2 anchorMin,
+            Vector2 offsetMax, Vector2 offsetMin,
+            Vector2 pivot,
+            Vector2 sizeDelta,
+            Vector3 anchoredPosition3D)
+        {
+            var rectTransform = obj.RectTransform;
+            obj.name = goName;
+            obj.gameObject.hideFlags = goHideFlags;
+
+            rectTransform.localScale = localScale;
+            rectTransform.localPosition = localPos;
+            rectTransform.localEulerAngles = localEulerAngles;
+            rectTransform.anchorMax = anchorMax;
+            rectTransform.anchorMin = anchorMin;
+            rectTransform.offsetMax = offsetMax;
+            rectTransform.offsetMin = offsetMin;
+            rectTransform.pivot = pivot;
+            rectTransform.sizeDelta = sizeDelta;
+            rectTransform.anchoredPosition3D = anchoredPosition3D;
+            rectTransform.ForceUpdateRectTransforms();
+        }
     }
 }

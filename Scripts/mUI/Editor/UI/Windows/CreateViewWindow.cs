@@ -25,15 +25,15 @@ namespace mFramework.Editor.UI.Windows
 
         private void OnGUI()
         {
-            GUILayout.BeginVertical();
+            EditorGUILayout.BeginVertical();
             _namespace = EditorGUILayout.TextField("Namespace", _namespace);
             _viewName = EditorGUILayout.TextField("View name", _viewName);
             _savePath = EditorGUILayout.TextField("Save path", _savePath);
-            GUILayout.EndVertical();
-
+            EditorGUILayout.EndVertical();
+            
             if (GUILayout.Button("Generate View"))
             {
-                ViewClassGenerator.View(
+                ViewClassWriter.View(
                     nameSpace: _namespace,
                     className: _viewName,
                     savePath: _savePath
@@ -44,7 +44,7 @@ namespace mFramework.Editor.UI.Windows
 
         private void CreateView()
         {
-            //ViewClassGenerator.View();
+            //ViewClassWriter.View();
         }
     }
 }

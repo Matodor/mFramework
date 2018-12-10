@@ -33,9 +33,6 @@ namespace mFramework.Editor.UI
         {
             base.OnInspectorGUI();
 
-            //EditorGUILayout.IntField("Child views", _view.ChildViews.Count, GUIStyle.none);
-            //EditorGUILayout.IntField("Child components", _view.ChildComponents.Count, GUIStyle.none);
-
             _show = EditorGUILayout.Foldout(_show, "Generate settings");
             if (_show)
             {
@@ -46,7 +43,7 @@ namespace mFramework.Editor.UI
 
                 if (GUILayout.Button($"Update '{_view.GetType().Name}' class"))
                 {
-                    ViewClassGenerator.View(_view);
+                    ViewClassWriter.View(_view);
                 }
             }
         }
