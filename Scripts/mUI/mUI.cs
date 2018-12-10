@@ -20,7 +20,7 @@ namespace mFramework.UI
 
             var obj = new GameObject(typeof(T).Name).AddComponent<T>();
             if (parent != null)
-                obj.transform.SetParent(parent.transform);
+                obj.RectTransform.SetParent(parent.transform);
             return obj;
         }
     }

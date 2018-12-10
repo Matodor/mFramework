@@ -24,10 +24,15 @@ namespace mFramework.UI
             gameObject.name = "[mUI] BaseView";
             gameObject.hideFlags =
                 HideFlags.DontSaveInBuild |
-                HideFlags.DontSaveInEditor |
+                HideFlags.DontSaveInEditor | 
                 HideFlags.NotEditable;
 
             UICamera = GetComponent<UICamera>();
+        }
+
+        protected override void Start()
+        {
+            base.Start();
             RectTransform.sizeDelta = UICamera.DeltaSize;
         }
 

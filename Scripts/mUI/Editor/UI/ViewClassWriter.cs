@@ -211,7 +211,7 @@ namespace mFramework.Editor.UI
                         ClassName(className, nameof(UIView));
                         OpeningBkt();
                         {
-                            OverrideMethod("Awake", content: () =>
+                            OverrideMethod("Start", content: () =>
                             {
                                 Line("Initialize();");
                             });
