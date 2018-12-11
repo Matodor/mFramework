@@ -2,7 +2,6 @@
 
 namespace mFramework.UI
 {
-    [DisallowMultipleComponent]
     [RequireComponent(typeof(UICamera))]
     public sealed class BaseView : UIView
     {
@@ -36,11 +35,14 @@ namespace mFramework.UI
             RectTransform.sizeDelta = UICamera.DeltaSize;
         }
 
+#if UNITY_EDITOR
         protected override void Reset()
         {
             base.Reset();
-            RectTransform.sizeDelta = UICamera.DeltaSize;
+            if (UICamera != null)
+                RectTransform.sizeDelta = UICamera.DeltaSize;
         }
+#endif
 
 #if UNITY_EDITOR
         protected override void Update()

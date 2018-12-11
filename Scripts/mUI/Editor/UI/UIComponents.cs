@@ -6,15 +6,15 @@ namespace mFramework.Editor.UI
 {
     public static class UIComponents
     {
-        private const string BasePath = "mFramework/mUI/Components/";
-
-        [MenuItem(BasePath + "UISprite")]
-        public static UISprite Sprite()
+		[MenuItem("GameObject/mUI/Components/UISprite", false, 0)]
+        [MenuItem("mFramework/mUI/Components/UISprite")]
+		public static UISprite Sprite()
         {
             return Create<UISprite>();
         }
 
-        [MenuItem(BasePath + "UIButton")]
+		[MenuItem("GameObject/mUI/Components/UIButton", false, 0)]
+        [MenuItem("mFramework/mUI/Components/UIButton")]
         public static UIButton Button()
         {
             return Create<UIButton>();

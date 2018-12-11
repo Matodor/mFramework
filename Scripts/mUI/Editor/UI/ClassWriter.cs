@@ -3,14 +3,16 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using mFramework.Editor.Extensions;
+using mFramework.Core.Extensions;
+using mFramework.Core.Interfaces;
 using mFramework.UI;
+using mFramework.UI.Interfaces;
 using UnityEditor;
 using UnityEngine;
 
 namespace mFramework.Editor.UI
 {
-    public class ViewClassWriter
+    public class ClassWriter : IClassWriter
     {
         public static string BasePath => Application.dataPath;
 
@@ -19,7 +21,7 @@ namespace mFramework.Editor.UI
         private StreamWriter _writer;
         private int _indentLevel;
 
-        private ViewClassWriter()
+        private ClassWriter()
         {
 
         }
@@ -27,12 +29,12 @@ namespace mFramework.Editor.UI
         public static void View(string nameSpace, string className,
             string savePath)
         {
-            new ViewClassWriter().CreateView(nameSpace, className, savePath, null, null);
+            new ClassWriter().CreateView(nameSpace, className, savePath, null, null);
         }
 
         public static void View(UIView view)
         {
-            new ViewClassWriter().FillView(view);
+            new ClassWriter().FillView(view);
         }
 
         private void FillView(UIView view)
@@ -41,7 +43,7 @@ namespace mFramework.Editor.UI
             for (var i = 0; i < view.transform.childCount; i++)
             {
                 var child = view.transform.GetChild(i).GetComponent<UIObject>();
-                if (child == null)
+                if (child == null || child.IgnoreByViewWriter)
                     continue;
 
                 var childView = child as UIView;
@@ -125,21 +127,7 @@ namespace mFramework.Editor.UI
 
         private void InitializeObject(string identifier, string goName, UIObject value)
         {
-            var r = value.RectTransform;
-
-            Line($"{identifier}.gameObject.name = \"{goName}\";");
-            Line($"{identifier}.gameObject.hideFlags = HideFlags.DontSaveInBuild | HideFlags.DontSaveInEditor;");
-
-            Line($"{identifier}.RectTransform.localScale = {r.localScale.StringCtor()};");
-            Line($"{identifier}.RectTransform.localPosition = {r.localPosition.StringCtor()};");
-            Line($"{identifier}.RectTransform.localRotation = {r.localRotation.StringCtor()};");
-            Line($"{identifier}.RectTransform.anchorMax = {r.anchorMax.StringCtor()};");
-            Line($"{identifier}.RectTransform.anchorMin = {r.anchorMin.StringCtor()};");
-            Line($"{identifier}.RectTransform.offsetMax = {r.offsetMax.StringCtor()};");
-            Line($"{identifier}.RectTransform.offsetMin = {r.offsetMin.StringCtor()};");
-            Line($"{identifier}.RectTransform.pivot = {r.pivot.StringCtor()};");
-            Line($"{identifier}.RectTransform.sizeDelta = {r.sizeDelta.StringCtor()};");
-            Line($"{identifier}.RectTransform.anchoredPosition = {r.anchoredPosition.StringCtor()};");
+            value.GenerateInitialize(this, identifier);
         }
 
         private void CreateView(string nameSpace, string className, 
@@ -178,7 +166,7 @@ namespace mFramework.Editor.UI
                     afterProps, afterCtor, designerPath);
 
                 var partialPath = Path.Combine(path, $"{className}.cs");
-                Debug.Log($"Generate Designer file: {partialPath}");
+                Debug.Log($"Generate partial view file: {partialPath}");
 
                 if (!File.Exists(partialPath))
                     CreatePartialFile(nameSpace, className, partialPath);
@@ -326,6 +314,7 @@ namespace mFramework.Editor.UI
         private void MenuItem(string className)
         {
             DirectiveIf("UNITY_EDITOR");
+            Line($"[MenuItem(\"GameObject/mUI/Views/Generated/{className}\", false, 0)]");
             Line($"[MenuItem(\"mFramework/mUI/Views/Generated/{className}\")]");
             Line("private static void Create()");
             OpeningBkt();
@@ -390,84 +379,84 @@ namespace mFramework.Editor.UI
             ClosingBkt();
         }
 
-        private void CreateUIObject(string identifier, Type type)
+        public void CreateUIObject(string identifier, Type type)
         {
             Line($"{identifier} = mUI.Create<{type.FullName}>(this);");
         }
 
-        private void SetLocalEulerAngles(string identifier, Vector3 v)
+        public void SetLocalEulerAngles(string identifier, Vector3 v)
         {
             Line($"{identifier}.transform.localEulerAngles = {v.StringCtor()};");
         }
 
-        private void SetLocalPosition(string identifier, Vector3 v)
+        public void SetLocalPosition(string identifier, Vector3 v)
         {
             Line($"{identifier}.transform.localPosition = {v.StringCtor()};");
         }
 
-        private void SetHideFlags(string identifier, HideFlags value)
+        public void SetHideFlags(string identifier, HideFlags value)
         {
             Line($"{identifier}.gameObject.hideFlags = HideFlags.{value.ToString()};");
         }
 
-        private void SetObjectName(string identifier, string value)
+        public void SetObjectName(string identifier, string value)
         {
             Line($"{identifier}.name = \"{value}\";");
         }
 
-        private void Else()
+        public void Else()
         {
             Line("else");
         }
 
-        private void If(string condition)
+        public void If(string condition)
         {
             Line($"if ({condition})");
         }
 
-        private void DirectiveRegion(string region)
+        public void DirectiveRegion(string region)
         {
             Line($"#region {region}");
         }
 
-        private void DirectiveEndRegion()
+        public void DirectiveEndRegion()
         {
             Line("#endregion");
         }
 
-        private void DirectiveElse()
+        public void DirectiveElse()
         {
             _writer.WriteLine("#else");
         }
 
-        private void DirectiveEndIf()
+        public void DirectiveEndIf()
         {
             _writer.WriteLine("#endif");
         }
 
-        private void DirectiveIf(string directive)
+        public void DirectiveIf(string directive)
         {
             _writer.WriteLine($"#if {directive}");
         }
 
-        private void NewLine()
+        public void NewLine()
         {
             _writer.WriteLine("");
         }
 
-        private void ClosingBkt()
+        public void ClosingBkt()
         {
             _indentLevel--;
             Line("}");
         }
 
-        private void OpeningBkt()
+        public void OpeningBkt()
         {
             Line("{");
             _indentLevel++;
         }
 
-        private void Comment(string comment)
+        public void Comment(string comment)
         {
             Line($"/* {comment} */");
         }
@@ -482,16 +471,26 @@ namespace mFramework.Editor.UI
             Line($"using {@namespace};");
         }
 
-        private void Line(string text)
+        public void Line(string text)
         {
             Tab(_indentLevel);
             _writer.WriteLine(text);
         }
 
-        private void Tab(int indentLevel)
+        public void Tab(int indentLevel)
         {
             if (indentLevel > 0)
                 _writer.Write(new string('\t', indentLevel));
+        }
+
+        public void SetColor(string identifier, IColored colored)
+        {
+            Line($"{identifier}.{nameof(IColored.Color)} = {colored.Color.StringCtor()};");
+        }
+
+        public void MethodInvoke(string identifier, string method, params string[] args)
+        {
+            Line($"{identifier}.{method}({string.Join(",", args)});");
         }
 
         private static void CheckDirectory(string path)

@@ -1,13 +1,19 @@
 ﻿using System.Reflection;
 using System.Reflection.Emit;
+using mFramework.Core.Interfaces;
 
 namespace mFramework.Core
 {
     public delegate object CachedPropertyGetter(object target);
     public delegate void CachedPropertySetter(object target, object value);
 
-    public class CachedProperty
+    public class CachedProperty : ICachedMemberInfo
     {
+        public MemberInfo MemberInfo
+        {
+            get { return PropertyInfo; }
+        }
+
         public readonly PropertyInfo PropertyInfo;
         private readonly CachedPropertyGetter _getter;
         private readonly CachedPropertySetter _setter;

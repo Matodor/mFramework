@@ -33,7 +33,7 @@ namespace mFramework.Editor.UI.Windows
             
             if (GUILayout.Button("Generate View"))
             {
-                ViewClassWriter.View(
+                ClassWriter.View(
                     nameSpace: _namespace,
                     className: _viewName,
                     savePath: _savePath
@@ -44,7 +44,7 @@ namespace mFramework.Editor.UI.Windows
 
         private void CreateView()
         {
-            //ViewClassWriter.View();
+            //ClassWriter.View();
         }
     }
 }

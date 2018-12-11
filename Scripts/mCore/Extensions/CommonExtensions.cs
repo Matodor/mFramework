@@ -1,9 +1,19 @@
 ﻿using UnityEngine;
 
-namespace mFramework.Editor.Extensions
+namespace mFramework.Core.Extensions
 {
     public static class CommonExtensions
     {
+        public static string ToString(this bool v)
+        {
+            return v ? "true" : "false";
+        }
+
+        public static string StringCtor(this Color v)
+        {
+            return $"new Color({v.r}f, {v.g}f, {v.b}f,{v.a}f)";
+        }
+
         public static string StringCtor(this Quaternion v)
         {
             return $"new Quaternion({v.x}f, {v.y}f, {v.z}f,{v.w}f)";

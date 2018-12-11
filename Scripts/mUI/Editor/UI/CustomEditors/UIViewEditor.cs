@@ -33,7 +33,7 @@ namespace mFramework.Editor.UI
         {
             base.OnInspectorGUI();
 
-            _show = EditorGUILayout.Foldout(_show, "Generate settings");
+            _show = EditorGUILayout.Foldout(_show, "View writer settings");
             if (_show)
             {
                 _view.Namespace = EditorGUILayout.TextField(
@@ -43,7 +43,7 @@ namespace mFramework.Editor.UI
 
                 if (GUILayout.Button($"Update '{_view.GetType().Name}' class"))
                 {
-                    ViewClassWriter.View(_view);
+                    ClassWriter.View(_view);
                 }
             }
         }

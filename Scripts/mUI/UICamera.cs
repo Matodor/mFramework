@@ -6,6 +6,7 @@ namespace mFramework.UI
 #if UNITY_EDITOR
     [ExecuteInEditMode]
 #endif
+    [DisallowMultipleComponent]
     [RequireComponent(typeof(Camera))]
     public sealed class UICamera : MonoBehaviour
     {
@@ -14,29 +15,29 @@ namespace mFramework.UI
             get
             {
                 return new Vector2(
-                    _camera.orthographicSize * _camera.aspect * 2,
-                    _camera.orthographicSize * 2);
+                    Camera.orthographicSize * Camera.aspect * 2,
+                    Camera.orthographicSize * 2);
             }
         }
 
-        private Camera _camera;
+        public Camera Camera { get; private set; }
 
         // ReSharper disable once UnusedMember.Local
         private void Awake()
         {
-            _camera = GetComponent<Camera>();
+            Camera = GetComponent<Camera>();
             Init();
         }
 
         private void Init()
         {
-            _camera.clearFlags = CameraClearFlags.SolidColor;
-            _camera.depth = 0;
-            _camera.orthographic = true;
-            _camera.orthographicSize = 5f;
-            _camera.farClipPlane = 1f;
-            _camera.nearClipPlane = -1;
-            _camera.backgroundColor = Color.gray;
+            Camera.clearFlags = CameraClearFlags.SolidColor;
+            Camera.depth = 0;
+            Camera.orthographic = true;
+            Camera.orthographicSize = 5f;
+            Camera.farClipPlane = 1f;
+            Camera.nearClipPlane = -1;
+            Camera.backgroundColor = Color.gray;
         }
 
         // ReSharper disable once UnusedMember.Local
