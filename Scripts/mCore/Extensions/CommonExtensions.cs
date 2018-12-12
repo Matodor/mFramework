@@ -19,6 +19,11 @@ namespace mFramework.Core.Extensions
             return $"new Quaternion({v.x}f, {v.y}f, {v.z}f,{v.w}f)";
         }
 
+        public static string StringCtor(this Vector4 v)
+        {
+            return $"new Vector4({v.x}f, {v.y}f, {v.z}f,{v.w}f)";
+        }
+
         public static string StringCtor(this Vector2 v)
         {
             return $"new Vector2({v.x}f, {v.y}f)";

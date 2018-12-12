@@ -1,23 +1,11 @@
-﻿using mFramework.Core.Common;
-using mFramework.Core.Extensions;
-using mFramework.Core.Interfaces;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace mFramework.UI
 {
     [RequireComponent(typeof(RectTransform))]
     [DisallowMultipleComponent]
-#if UNITY_EDITOR
-    public abstract class UIObject : MonoBehaviour, IInitializeWriter
-#else
-    public abstract class UIObject : MonoBehaviour
-#endif
+    public class UIObject : MonoBehaviour
     {
-#if UNITY_EDITOR
-        #region EDITOR
-        public bool IgnoreByViewWriter { get; set; }
-        #endregion
-#endif
         public ulong GUID { get; private set; }
 
         public RectTransform RectTransform { get; private set; }
@@ -27,13 +15,11 @@ namespace mFramework.UI
         #endregion
 
         private static ulong _guid;
-        private int _sortingOrder;
 
         protected virtual void Awake()
         {
             GUID = ++_guid;
             RectTransform = gameObject.GetComponent<RectTransform>();
-            RectTransform.sizeDelta = Vector2.one;
         }
 
 #if UNITY_EDITOR
@@ -98,34 +84,5 @@ namespace mFramework.UI
             //    Parent = null;
             //}
         }
-
-#if UNITY_EDITOR
-        public virtual void GenerateInitialize(IClassWriter _, string identifier)
-        {
-            _.Line($"{identifier}.gameObject.layer = {gameObject.layer};");
-            _.Line($"{identifier}.gameObject.tag = \"{gameObject.tag}\";");
-            _.Line($"{identifier}.gameObject.name = \"{gameObject.name}\";");
-            _.Line($"{identifier}.gameObject.hideFlags = HideFlags.DontSaveInBuild | HideFlags.DontSaveInEditor;");
-
-            var components = gameObject.GetComponents<Component>();
-            for (var i = 0; i < components.Length; i++)
-            {
-                var componentWriter = new ComponentWriter(identifier, components[i], _);
-            }
-            
-            _.DirectiveRegion("RectTransform");
-            _.Line($"{identifier}.RectTransform.localScale = {RectTransform.localScale.StringCtor()};");
-            _.Line($"{identifier}.RectTransform.localPosition = {RectTransform.localPosition.StringCtor()};");
-            _.Line($"{identifier}.RectTransform.localRotation = {RectTransform.localRotation.StringCtor()};");
-            _.Line($"{identifier}.RectTransform.anchorMax = {RectTransform.anchorMax.StringCtor()};");
-            _.Line($"{identifier}.RectTransform.anchorMin = {RectTransform.anchorMin.StringCtor()};");
-            _.Line($"{identifier}.RectTransform.offsetMax = {RectTransform.offsetMax.StringCtor()};");
-            _.Line($"{identifier}.RectTransform.offsetMin = {RectTransform.offsetMin.StringCtor()};");
-            _.Line($"{identifier}.RectTransform.pivot = {RectTransform.pivot.StringCtor()};");
-            _.Line($"{identifier}.RectTransform.sizeDelta = {RectTransform.sizeDelta.StringCtor()};");
-            _.Line($"{identifier}.RectTransform.anchoredPosition = {RectTransform.anchoredPosition.StringCtor()};");
-            _.DirectiveEndRegion();
-        }
-#endif
     }
 }

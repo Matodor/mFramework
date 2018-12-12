@@ -30,13 +30,6 @@ namespace mFramework.Editor.UI
             EditorGUI.BeginDisabledGroup(true);
             EditorGUILayout.LongField("GUID", (long)_object.GUID);
             EditorGUI.EndDisabledGroup();
-
-            _object.IgnoreByViewWriter = EditorGUILayout.Toggle("Ignore by view writer", _object.IgnoreByViewWriter);
-
-            if (GUILayout.Button("test"))
-            {
-                _object.RectTransform.ForceUpdateRectTransforms();
-            }
         }
     }
 }
