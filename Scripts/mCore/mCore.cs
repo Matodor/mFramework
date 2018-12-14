@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace mFramework.Core
@@ -19,7 +20,11 @@ namespace mFramework.Core
             if (_cachedTypes.ContainsKey(type))
                 return _cachedTypes[type];
 
-            var cachedType = new CachedType(type);
+            const BindingFlags flags = BindingFlags.NonPublic |
+                                       BindingFlags.Instance |
+                                       BindingFlags.Public;
+
+            var cachedType = new CachedType(type, flags, flags);
             _cachedTypes.Add(type, cachedType);
             return cachedType;
         }

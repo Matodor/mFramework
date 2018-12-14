@@ -11,7 +11,7 @@ namespace mFramework.Animations.Types
         public Vector2 FirstPoint;
         public Vector2 SecondPoint;
         public Vector2 ThirdPoint;
-        public Space RelativeTo = Space.World;
+        public Space RelativeTo = Space.Self;
     } 
 
     public class BezierQuadraticAnimation : BaseAnimation<BezierQuadraticAnimationSettings>

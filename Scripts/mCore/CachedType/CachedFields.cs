@@ -9,15 +9,11 @@ namespace mFramework.Core
     {
         private readonly IEnumerable<CachedField> _fields;
 
-        public CachedFields(Type type)
+        public CachedFields(Type type, BindingFlags bindingFlags)
         {
-            var fields = type.GetFields(
-                BindingFlags.NonPublic | 
-                BindingFlags.Instance | 
-                BindingFlags.Public
-            );
-
+            var fields = type.GetFields(bindingFlags);
             var array = new CachedField[fields.Length];
+
             for (var i = 0; i < fields.Length; i++)
             {
                 //Debug.Log($"FieldType={fields[i].FieldType}\n" +

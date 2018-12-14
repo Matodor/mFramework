@@ -12,7 +12,7 @@ namespace mFramework.Animations.Types
         public Vector2 SecondPoint;
         public Vector2 ThirdPoint;
         public Vector2 FourthPoint;
-        public Space RelativeTo = Space.World;
+        public Space RelativeTo = Space.Self;
     }
 
     public class BezierCubicAnimation : BaseAnimation<BezierCubicAnimationSettings>

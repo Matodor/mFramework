@@ -9,15 +9,11 @@ namespace mFramework.Core
     {
         private readonly IEnumerable<CachedProperty> _properties;
 
-        public CachedProperties(Type type)
+        public CachedProperties(Type type, BindingFlags flags)
         {
-            var properties = type.GetProperties(
-                BindingFlags.NonPublic |
-                BindingFlags.Instance |
-                BindingFlags.Public
-            );
-
+            var properties = type.GetProperties(flags);
             var array = new CachedProperty[properties.Length];
+
             for (var i = 0; i < properties.Length; i++)
             {
                 //Debug.Log($"PropertyType={properties[i].PropertyType}\n" +
