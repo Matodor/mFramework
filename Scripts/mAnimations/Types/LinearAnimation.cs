@@ -1,5 +1,6 @@
 ﻿using System;
 using mFramework.Core;
+using mFramework.Core.Extensions;
 using UnityEngine;
 
 namespace mFramework.Animations.Types
@@ -16,16 +17,9 @@ namespace mFramework.Animations.Types
     {
         public override void Animate()
         {
-            if (Settings.RelativeTo == Space.World)
-            {
-                transform.position = BezierHelper.Linear(
-                    EasingTime, Settings.From, Settings.To);
-            }
-            else
-            {
-                transform.localPosition = BezierHelper.Linear(
-                    EasingTime, Settings.From, Settings.To);
-            }
+            transform.Position(
+                BezierHelper.Linear(EasingTime, Settings.From, Settings.To), 
+                Settings.RelativeTo);
         }
     }
 }

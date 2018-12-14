@@ -1,8 +1,11 @@
-﻿using UnityEngine;
+﻿using System;
+using mFramework.Core;
+using mFramework.Core.Extensions;
+using UnityEngine;
 
 namespace mFramework.Animations.Types
 {
-    [SerializeField]
+    [Serializable]
     public class BezierCubicAnimationSettings : AnimationSettings
     {
         public Vector2 FirstPoint;
@@ -16,7 +19,13 @@ namespace mFramework.Animations.Types
     {
         public override void Animate()
         {
-            
+            transform.Position(
+                BezierHelper.Cubic(EasingTime,
+                    Settings.FirstPoint,
+                    Settings.SecondPoint,
+                    Settings.ThirdPoint,
+                    Settings.FourthPoint),
+                Settings.RelativeTo);
         }
     }
 }
