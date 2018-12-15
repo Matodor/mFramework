@@ -4,11 +4,11 @@ namespace mFramework.UI.Extensions
 {
     public static class ColorExtensions
     {
-        public static UIColor Inverted(this UIColor color)
+        public static UIColor Inverted(this UIColor hsv)
         {
-            if (color.Type == ColorType.RGBA)
-                color = UIColor.ToHSV(color);
-            return new UIColor(((color.N1 + 180) % 360) / 360f, color.N2, color.N3, color.Alpha, ColorType.HSV);
+            if (hsv.Type == ColorType.RGBA)
+                hsv = UIColor.ToHSV(hsv);
+            return new UIColor(((hsv.N1 + 180) % 360) / 360f, hsv.N2, hsv.N3, hsv.Alpha, ColorType.HSV);
         }
 
         /// <summary>

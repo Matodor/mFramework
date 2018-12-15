@@ -3,8 +3,12 @@ using UnityEngine;
 
 namespace mFramework.UI
 {
+    [Serializable]
     public struct UIColor
     {
+        public static readonly UIColor White = new UIColor(1, 1, 1, 1, ColorType.RGBA);
+        public static readonly UIColor Black = new UIColor(0, 0, 0, 1, ColorType.RGBA);
+
         /// <summary>
         /// Color type
         /// </summary>
@@ -57,32 +61,30 @@ namespace mFramework.UI
             return new UIColor(color.r, color.g, color.b, hsv.Alpha, ColorType.RGBA);
         }
 
-        public static UIColor ToHSV(UIColor rgb)
+        public static UIColor ToHSV(UIColor rgbColor)
         {
-            if (rgb.Type == ColorType.HSV)
-                return rgb;
+            if (rgbColor.Type == ColorType.HSV)
+                return rgbColor;
 
             float h, s, v;
-
-            if (rgb.N3 > rgb.N2 && rgb.N3 > rgb.N1)
-                RGBToHSVHelper(4f, rgb.N3, rgb.N1, rgb.N2, out h, out s, out v);
-            else if (rgb.N2 > rgb.N1)
-                RGBToHSVHelper(2f, rgb.N2, rgb.N3, rgb.N1, out h, out s, out v);
+            if ((double)rgbColor.N3 > (double)rgbColor.N2 && (double)rgbColor.N3 > (double)rgbColor.N1)
+                RGBToHSVHelper(4f, rgbColor.N3, rgbColor.N1, rgbColor.N2, out h, out s, out v);
+            else if ((double)rgbColor.N2 > (double)rgbColor.N1)
+                RGBToHSVHelper(2f, rgbColor.N2, rgbColor.N3, rgbColor.N1, out h, out s, out v);
             else
-                RGBToHSVHelper(0.0f, rgb.N1, rgb.N2, rgb.N3, out h, out s, out v);
+                RGBToHSVHelper(0.0f, rgbColor.N1, rgbColor.N2, rgbColor.N3, out h, out s, out v);
 
-            return new UIColor(h, s, v, rgb.Alpha, ColorType.HSV);
+            return new UIColor(h, s, v, rgbColor.Alpha, ColorType.HSV);
         }
-
-        private static void RGBToHSVHelper(float offset, float dominantcolor, float colorone, float colortwo,
-            out float H, out float S, out float V)
+        
+        private static void RGBToHSVHelper(float offset, float dominantcolor, float colorone, float colortwo, out float H, out float S, out float V)
         {
             V = dominantcolor;
-            if (V != 0.0)
+            if ((double)V != 0.0)
             {
-                var num1 = colorone <= (double) colortwo ? colorone : colortwo;
-                var num2 = V - num1;
-                if (num2 != 0.0)
+                float num1 = (double)colorone <= (double)colortwo ? colorone : colortwo;
+                float num2 = V - num1;
+                if ((double)num2 != 0.0)
                 {
                     S = num2 / V;
                     H = offset + (colorone - colortwo) / num2;
@@ -92,9 +94,8 @@ namespace mFramework.UI
                     S = 0.0f;
                     H = offset + (colorone - colortwo);
                 }
-
                 H /= 6f;
-                if (H >= 0.0)
+                if ((double)H >= 0.0)
                     return;
                 ++H;
             }
@@ -208,6 +209,11 @@ namespace mFramework.UI
         public static explicit operator UIColor(Color color)
         {
             return new UIColor(color.r, color.g, color.b, color.a, ColorType.RGBA);
+        }
+
+        public override string ToString()
+        {
+            return $"({N1} {N2} {N3} {Alpha} {Type})";
         }
     }
 }

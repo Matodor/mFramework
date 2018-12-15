@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using mFramework.Core.Interfaces;
 
 namespace mFramework.Core
 {
@@ -16,6 +17,23 @@ namespace mFramework.Core
             Type = type;
             CachedFields = new CachedFields(type, fieldsBindingFlags);
             CachedProperties = new CachedProperties(type, propertiesBindingFlags);
+        }
+
+        public ICachedMemberInfo GetFieldOrProperty(string name)
+        {
+            foreach (var cachedField in CachedFields)
+            {
+                if (cachedField.FieldInfo.Name == name)
+                    return cachedField;
+            }
+
+            foreach (var cachedProperty in CachedProperties)
+            {
+                if (cachedProperty.PropertyInfo.Name == name)
+                    return cachedProperty;
+            }
+
+            return null;
         }
     }
 }
