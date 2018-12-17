@@ -67,9 +67,9 @@ namespace mFramework.UI
                 return rgbColor;
 
             float h, s, v;
-            if ((double)rgbColor.N3 > (double)rgbColor.N2 && (double)rgbColor.N3 > (double)rgbColor.N1)
+            if (rgbColor.N3 > rgbColor.N2 && rgbColor.N3 > rgbColor.N1)
                 RGBToHSVHelper(4f, rgbColor.N3, rgbColor.N1, rgbColor.N2, out h, out s, out v);
-            else if ((double)rgbColor.N2 > (double)rgbColor.N1)
+            else if (rgbColor.N2 > rgbColor.N1)
                 RGBToHSVHelper(2f, rgbColor.N2, rgbColor.N3, rgbColor.N1, out h, out s, out v);
             else
                 RGBToHSVHelper(0.0f, rgbColor.N1, rgbColor.N2, rgbColor.N3, out h, out s, out v);
@@ -77,32 +77,34 @@ namespace mFramework.UI
             return new UIColor(h, s, v, rgbColor.Alpha, ColorType.HSV);
         }
         
-        private static void RGBToHSVHelper(float offset, float dominantcolor, float colorone, float colortwo, out float H, out float S, out float V)
+        private static void RGBToHSVHelper(float offset, float dominantcolor, 
+            float colorOne, float colorTwo, 
+            out float h, out float s, out float v)
         {
-            V = dominantcolor;
-            if ((double)V != 0.0)
+            v = dominantcolor;
+            if (v != 0.0)
             {
-                float num1 = (double)colorone <= (double)colortwo ? colorone : colortwo;
-                float num2 = V - num1;
-                if ((double)num2 != 0.0)
+                var num1 = colorOne <= colorTwo ? colorOne : colorTwo;
+                var num2 = v - num1;
+                if (num2 != 0.0)
                 {
-                    S = num2 / V;
-                    H = offset + (colorone - colortwo) / num2;
+                    s = num2 / v;
+                    h = offset + (colorOne - colorTwo) / num2;
                 }
                 else
                 {
-                    S = 0.0f;
-                    H = offset + (colorone - colortwo);
+                    s = 0.0f;
+                    h = offset + (colorOne - colorTwo);
                 }
-                H /= 6f;
-                if ((double)H >= 0.0)
+                h /= 6f;
+                if (h >= 0.0)
                     return;
-                ++H;
+                ++h;
             }
             else
             {
-                S = 0.0f;
-                H = 0.0f;
+                s = 0.0f;
+                h = 0.0f;
             }
         }
 
