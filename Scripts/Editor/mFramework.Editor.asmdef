@@ -1,0 +1,12 @@
+{
+    "name": "mFramework.Editor",
+    "references": [
+        "mFramework.Runtime"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false
+}
